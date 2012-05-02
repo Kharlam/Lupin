@@ -1,0 +1,10 @@
+http://wordpress.com/|https://en.wordpress.com/wp-login.php
+http://www.facebook.com/|https://www.facebook.com/login.php
+http://www.reddit.com/|https://ssl.reddit.com/post/login
+http://twitter.com|https://twitter.com/sessions
+http://www.linkedin.com/|https://www.linkedin.com/uas/login-submit
+http://www.answers.com/|javascript:dologin('input#username'
+http://www.myspace.com|https://www.myspace.com/auth/login
+http://thepiratebay.se/login|/login
+http://imgur.com/signin|/signin
+http://www.nypost.com/login|/login
