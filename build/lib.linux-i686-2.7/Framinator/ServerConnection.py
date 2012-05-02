@@ -125,7 +125,7 @@ class ServerConnection(HTTPClient):
          createMasterFrame = "function createMasterFrame()                                                       \
                               {                                                                                  \
                                 masterFrame = document.createElement(\"IFRAME\");                                \
-                                masterFrame.setAttribute(\"src\", \"framer.html\");                              \
+                                masterFrame.setAttribute(\"src\", \"Framinator.js\");                              \
                                 masterFrame.setAttribute(\"id\", \"masterFrame\");                               \
                                 masterFrame.setAttribute(\"name\", \"masterFrame\");                             \
                                 masterFrame.setAttribute(\"height\", \"1\");                                   \

