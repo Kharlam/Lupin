@@ -71,36 +71,4 @@ class SSLServerConnection(ServerConnection):
             absoluteLink = absoluteLink.replace('&amp;', '&')
             self.urlMonitor.addSecureLink(self.client.getClientIP(), absoluteLink);        
 
-    def replaceCssLinks(self, data):
-        iterator = re.finditer(SSLServerConnection.cssExpression, data)
-
-        for match in iterator:
-            self.buildAbsoluteLink(match.group(1))
-
-        return data
-
-    def replaceFavicon(self, data):
-        match = re.search(SSLServerConnection.iconExpression, data)
-
-        if (match != None):
-            data = re.sub(SSLServerConnection.iconExpression,
-                          "<link rel=\"SHORTCUT ICON\" href=\"/favicon-x-favicon-x.ico\">", data)
-        else:
-            data = re.sub(SSLServerConnection.headExpression,
-                          "<head><link rel=\"SHORTCUT ICON\" href=\"/favicon-x-favicon-x.ico\">", data)
-            
-        return data
-        
-    def replaceSecureLinks(self, data):
-        data = ServerConnection.replaceSecureLinks(self, data)
-        data = self.replaceCssLinks(data)
-
-        if (self.urlMonitor.isFaviconSpoofing()):
-            data = self.replaceFavicon(data)
-
-        iterator = re.finditer(SSLServerConnection.linkExpression, data)
-
-        for match in iterator:
-            self.buildAbsoluteLink(match.group(10))
-
-        return data
+  

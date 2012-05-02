@@ -1,2 +1,0 @@
-2012-05-01 23:00:12,744 POST Data (twitter.com):
-log%5B%5D=%7B%22event_name%22%3A%22profiler_waypoint%22%2C%22profiler_type%22%3A0%2C%22product%22%3A%22webclient%22%2C%22start_time_ms%22%3A%222012-05-02T02%3A59%3A54.783Z%22%2C%22impression_id%22%3A%221335927594456.0671%22%2C%22id%22%3A1%2C%22description%22%3A%22twttr.bundles+fetched%22%2C%22end_time_ms%22%3A%222012-05-02T02%3A59%3A55.628Z%22%2C%22duration_ms%22%3A845%2C%22user_id%22%3A0%2C%22_category_%22%3A%22perftown%22%2C%22ts%22%3A1335927595629%7D
