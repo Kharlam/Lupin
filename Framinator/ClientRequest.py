@@ -12,7 +12,6 @@ from twisted.internet.protocol import ClientFactory
 
 from ServerConnectionFactory import ServerConnectionFactory
 from ServerConnection import ServerConnection
-#from SSLServerConnection import SSLServerConnection
 from URLMonitor import URLMonitor
 from DnsCache import DnsCache
 
@@ -138,7 +137,6 @@ class ClientRequest(Request):
            path = path[:tmp-1]
            if(len(path) > 1):
               host += path
-           #print "!!"+host
            self.sendForgery(host) 
            return
 
@@ -148,9 +146,11 @@ class ClientRequest(Request):
         else:
            actAs = "framer"
            print "FRAME: "+url
+           '''
            vics = open("vics/allvics",'a+')
            vics.write(client+";")        
            vics.close()
+           '''
               
         self.dnsCache.cacheResolution(host, address)
                   
