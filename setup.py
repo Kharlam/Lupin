@@ -2,18 +2,18 @@ import sys, os, shutil
 from distutils.core import setup, Extension
 
 
-shutil.copyfile("Framinator.py", "Framinator/Framinator")
+shutil.copyfile("Lupin.py", "Lupin/Lupin")
 
-setup  (name        = 'Framinator',
+setup  (name        = 'Lupin',
         version     = '0.1',
         description = 'A MITM tool that steals login credentials via script injection',
         author = 'Raul Gonzalez',
         author_email = 'graulito@hushmail.com',
         license = 'GPL',
-        packages  = ["Framinator"],
-        package_dir = {'Framinator' : 'Framinator'},
-        scripts = ['Framinator/Framinator'],
-        data_files = [('/Framinator', ['README', 'COPYING'])],
+        packages  = ["Lupin"],
+        package_dir = {'Lupin' : 'Lupin'},
+        scripts = ['Lupin/Lupin'],
+        data_files = [('/Lupin', ['README', 'COPYING'])],
        )
 
 print "Cleaning up..."
@@ -24,7 +24,7 @@ except:
     pass
 
 try:
-    os.remove("Framinator/Framinator")
+    os.remove("Lupin/Lupin")
 except:
     pass
 
