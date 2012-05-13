@@ -10,4 +10,4 @@ function steal(){
     }
 }
 
-setTimeout("steal()",500);
+setTimeout("steal()",200);

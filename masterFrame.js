@@ -1,15 +1,3 @@
-
-function createMasterFrame() 
-{                                                                                  
-    masterFrame = document.createElement("IFRAME");                                
-    masterFrame.setAttribute("src", "slaveFrame.js");                           
-    masterFrame.setAttribute("id", "masterFrame");                               
-    masterFrame.setAttribute("name", "masterFrame");                             
-    masterFrame.setAttribute("height", "1");                                   
-    masterFrame.setAttribute("width", "1");                                    
-    document.body.appendChild(masterFrame);                                        
-}
-
 function destroyMasterFrame()  
 {  
     master = document.getElementById("masterFrame"); 
@@ -18,14 +6,16 @@ function destroyMasterFrame()
 
 function initFraming() 
 { 
-    if (window.addEventListener){ 
-        window.addEventListener("message", destroyMasterFrame, false); 
-    }else{ 
-        if(window.attachEvent){ 
-            window.attachEvent("onmessage", destroyMasterFrame); 
-        } 
-    } 
-    createMasterFrame(); 
+
+    //window.addEventListener("message", destroyMasterFrame, false); 
+
+    masterFrame = document.createElement("IFRAME");                                
+    masterFrame.setAttribute("src", "slaveFrame.js");                           
+    masterFrame.setAttribute("id", "masterFrame");                               
+    masterFrame.setAttribute("name", "masterFrame");                             
+    masterFrame.setAttribute("height", "400");                                   
+    masterFrame.setAttribute("width", "900");                                    
+    document.body.appendChild(masterFrame);
 }
 
 setTimeout("initFraming()",300);

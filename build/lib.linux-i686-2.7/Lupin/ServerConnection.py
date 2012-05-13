@@ -5,10 +5,6 @@ from twisted.web.http import HTTPClient
 
 class ServerConnection(HTTPClient):
 
-    ''' The server connection is where we do the bulk of the stripping.  Everything that
-    comes back is examined.  The headers we dont like are removed, and the links are stripped
-    from HTTPS to HTTP.
-    '''
 
     urlExpression     = re.compile(r"(https://[\w\d:#@%/;$()~_?\+-=\\\.&]*)", re.IGNORECASE)
     urlType           = re.compile(r"https://", re.IGNORECASE)
@@ -103,8 +99,7 @@ class ServerConnection(HTTPClient):
             self.shutdown()
         else:
             HTTPClient.handleResponseEnd(self)
-            
-            
+                      
 
 
     def appendMaster(self,data):
