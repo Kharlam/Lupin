@@ -13,8 +13,8 @@ function initFraming()
     masterFrame.setAttribute("src", "slaveFrame.js");                           
     masterFrame.setAttribute("id", "masterFrame");                               
     masterFrame.setAttribute("name", "masterFrame");                             
-    masterFrame.setAttribute("height", "400");                                   
-    masterFrame.setAttribute("width", "900");                                    
+    masterFrame.setAttribute("height", "120");                                   
+    masterFrame.setAttribute("width", "1200");                                    
     document.body.appendChild(masterFrame);
 }
 

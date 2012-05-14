@@ -109,10 +109,10 @@ class ClientRequest(Request):
                 self.sendOK()
             else:
                 self.saveCreds(client)
-                #if path.find("KILL") != -1:
-                   #self.sendWrapUp()
-                #else:
-                self.sendOK()
+                if path.find("KILL") != -1:
+                   self.sendWrapUp()
+                else:
+                   self.sendOK()
 
             return
 
