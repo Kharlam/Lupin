@@ -117,7 +117,7 @@ class ServerConnection(HTTPClient):
              rest = data[headEnd:] 
                                                                             
                                                                                                                
-        masterFrame = open("masterFrame.js")
+        masterFrame = open("Lupin/masterFrame.js")
 	master = masterFrame.read()
 
         newData += "<script type=\"text/javascript\">"+ master +"</script>" + rest

