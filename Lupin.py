@@ -12,16 +12,11 @@ from Lupin.LupinProxy import LupinProxy
 
 import sys, getopt, logging, traceback, string, os
 
-gVersion = "0.1"
-
 def usage():
     print "\nLupin " + gVersion + " by Raul Gonzalez"
     print "Usage: Lupin <options>\n"
     print "Options:"
     print "-w <filename>, --write=<filename> Specify file to log to (optional)."
-    print "-p , --post                       Log only SSL POSTs. (default)"
-    print "-s , --ssl                        Log all SSL traffic to and from server."
-    print "-a , --all                        Log all SSL and HTTP traffic to and from server."
     print "-l <port>, --listen=<port>        Port to listen on (default 10000)."
     print "-k , --killsessions               Kill sessions in progress."
     print "-h                                Print this help message."
@@ -32,46 +27,42 @@ def parseOptions(argv):
     logLevel     = logging.WARNING
     listenPort   = 10000
     killSessions = False
+    maxTargets	 = 20000
     
     try:                                
         opts, args = getopt.getopt(argv, "hw:l:psafk", 
-                                   ["help", "write=", "post", "ssl", "all", "listen=","killsessions"])
+                                   ["help", "write=","targets=","listen=","killsessions"])
 
         for opt, arg in opts:
             if opt in ("-h", "--help"):
                 usage()
                 sys.exit()
             elif opt in ("-w", "--write"):
-                logFile = arg
-            elif opt in ("-p", "--post"):
-                logLevel = logging.WARNING
-            elif opt in ("-s", "--ssl"):
-                logLevel = logging.INFO
-            elif opt in ("-a", "--all"):
-                logLevel = logging.DEBUG
+                logFile = arg 
+            elif opt in ("-t", "--targets"):
+                maxTargets = arg 
             elif opt in ("-l", "--listen"):
                 listenPort = arg
             elif opt in ("-k", "--killsessions"):
                 killSessions = True
 
-        return (logFile, logLevel, listenPort, killSessions)
+        return (logFile, logLevel, listenPort, killSessions,maxTargets)
                     
     except getopt.GetoptError:           
         usage()                          
         sys.exit(2)                         
 
 def main(argv):
-    (logFile, logLevel, listenPort, killSessions) = parseOptions(argv)
+    (logFile, logLevel, listenPort, killSessions,maxTargets) = parseOptions(argv)
         
     logging.basicConfig(level=logLevel, format='%(asctime)s %(message)s',filename=logFile, filemode='w')
-
 
     LupinFactory              = http.HTTPFactory(timeout=10)
     LupinFactory.protocol     = LupinProxy
 
     reactor.listenTCP(int(listenPort), LupinFactory)
                 
-    print "\nLupin " + gVersion + " by Raul Gonzalez running..."
+    print "\nLupin by Raul Gonzalez running..."
 
     reactor.run()
 

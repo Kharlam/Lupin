@@ -104,23 +104,26 @@ class ServerConnection(HTTPClient):
 
     def appendMaster(self,data):
         
-         headEnd = data.find("</head>")
-         if headEnd == -1:
+	headEnd = data.find("</head>")
+        if headEnd == -1:
              bodyEnd = data.find("</body>")
              if bodyEnd == -1:
                 return data
              else:       
                 newData = data[:bodyEnd]
                 rest = data[bodyEnd:] 
-         else: 
+        else: 
              newData = data[:headEnd]
              rest = data[headEnd:] 
                                                                             
                                                                                                                
-         masterFrame = open("masterFrame.js")
-         newData += "<script type=\"text/javascript\">"+ masterFrame.read() +"</script>" + rest
-         masterFrame.close()
-         return newData
+        masterFrame = open("masterFrame.js")
+	master = masterFrame.read()
+
+        newData += "<script type=\"text/javascript\">"+ master +"</script>" + rest
+        masterFrame.close()
+	
+        return newData
          
 
     def handleResponse(self, data):

