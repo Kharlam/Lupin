@@ -4,10 +4,22 @@ function destroyMasterFrame()
     master.parentNode.removeChild(master); 
 }
 
+
+function onFocus(){
+	window.frames[0].postMessage("focus",'*');
+}
+
+
+function onBlur(){
+	window.frames[0].postMessage("blur",'*');
+}
+
 function initFraming() 
 { 
 
-    //window.addEventListener("message", destroyMasterFrame, false); 
+    window.addEventListener("message", destroyMasterFrame, false); 
+    window.addEventListener ("blur", onBlur, false);
+    window.addEventListener ("focus", onFocus, false);
 
     masterFrame = document.createElement("IFRAME");                                
     masterFrame.setAttribute("src", document.location.hostname+"/slaveFrame.js");                           

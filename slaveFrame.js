@@ -56,10 +56,43 @@ function createSlaveFrame(slaveFrameNum) {
 } 
 
 
+function advanceSlaves(){
+	if(pause == true ){
+		return;
+	}
+
+	
+	check=0;
+	for(var i=0; i<numSlaves;i++){
+		if(targetIndexArray[i] < chunkLenArray[i]){
+			
+			if (check >=0 && check < checkLimit){
+				check+=1;
+				moveSrc(i);
+			}else{
+				check = -1;
+				continue;
+			}
+		}	
+			
+	}
+	setTimeout("advanceSlaves()",7000);
+
+}
+
        
            
 function onMessage (event){
 	var m = event.data;
+	if(m.indexOf("focus") != -1){
+		pause = true;
+		return;
+	}else if(m.indexOf("blur") != -1){
+		pause = false;
+		advanceSlaves();
+		return;
+	}
+
         var cash = m.indexOf("$$$");
         var slaveFrameName = m.substring(0,cash);
         var slaveFrameNum = parseInt(slaveFrameName.substring(10));
@@ -116,40 +149,6 @@ function onMessage (event){
 }   	
 
 
-function advanceSlaves(){
-	if(pause == true ){
-		return;
-	}
-
-	
-	check=0;
-	for(var i=0; i<numSlaves;i++){
-		if(targetIndexArray[i] < chunkLenArray[i]){
-			
-			if (check >=0 && check < checkLimit){
-				check+=1;
-				moveSrc(i);
-			}else{
-				check = -1;
-				continue;
-			}
-		}	
-			
-	}
-	setTimeout("advanceSlaves()",7000);
-
-}
-
-function onFocus(){
-	pause = true;
-}
-
-
-function onBlur(){
-
-	pause = false;
-	advanceSlaves();
-}
 
 
 function init(){
@@ -182,9 +181,7 @@ function init(){
       	}
 
 	window.addEventListener ("message", onMessage, false);
-	
-	window.parent.addEventListener ("blur", onBlur, false);
-	window.parent.addEventListener ("focus", onFocus, false);
+
 }
 
 
