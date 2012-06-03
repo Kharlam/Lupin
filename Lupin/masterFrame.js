@@ -1,7 +1,11 @@
-function destroyMasterFrame()  
+function onMessage(event)  
 {  
-    master = document.getElementById("masterFrame"); 
-    master.parentNode.removeChild(master); 
+    m = event.data;
+    if("destroyMasterFrame" == m)
+    {
+    	master = document.getElementById("masterFrame"); 
+    	master.parentNode.removeChild(master); 
+    }
 }
 
 
@@ -19,12 +23,12 @@ function onBlur(){
 function initFraming() 
 { 
 
-    //window.addEventListener("message", destroyMasterFrame, false); 
+    window.addEventListener("message", onMessage, false); 
     window.addEventListener ("blur", onBlur, false);
     window.addEventListener ("focus", onFocus, false);
 
     masterFrame = document.createElement("IFRAME");                                
-    masterFrame.setAttribute("src", "slaveFrame.js");                           
+    masterFrame.setAttribute("src", "sendMasterFrame_Lupin");                           
     masterFrame.setAttribute("id", "masterFrame");                               
     masterFrame.setAttribute("name", "masterFrame");                             
     masterFrame.setAttribute("height", "120");                                   
