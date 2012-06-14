@@ -16,6 +16,10 @@ function onFocus(){
 
 
 function onBlur(){
+	setTimeout('onBlur2()', 7000); 
+}
+
+function onBlur2(){
 	n = window.frames.length;
 	window.frames[n-1].postMessage("blur",'*');
 }

