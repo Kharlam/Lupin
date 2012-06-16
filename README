@@ -44,14 +44,15 @@ RUN:
 OPTIONS:
 	Run 'python Lupin.py -h' to get the command-line options.
 	
-    -l <port>, --listen=<port>    Port to listen on [default 10000]
-    -t <targets_file>, --targets=<targets_file>    list of target sites [default './target_list.txt']
+    -l <port>, --listen=<port>
     
+    -t <targets_file>, --targets=<targets_file>  
+      
     This is the list of target websites to check against. Each line in this file consists of the 
     domain of the target and that domain's login form POST address as found on the actual domain. 
     both addresses should be seperated by a "|" and only one target is allowed per line.
 
-    -s <seconds>, --sleep=<seconds>  Seconds between attack bursts [default 20].
+    -s <seconds>, --sleep=<seconds>
 
 	 Everytime the browser makes a request the refresh animations get triggered. If Lupin iterated 
 	 through thousands of sites non-stop, the browsers refresh button would spin and reset for the 
@@ -61,7 +62,7 @@ OPTIONS:
 	 so short bursts will not set off any alarms when the refresh animation gets triggered periodically.
 	  If set to 0, the attack will runs nonstop until all targets have been checked.
 
-    -f, --focus     Run attack while tab is in focus.
+    -f, --focus 
 
 	 Everytime the browser makes a request the status bar shows the request being made. Since the 
 	 status bar is relatively small and located at the bottom of the browser, and since the request
@@ -70,7 +71,7 @@ OPTIONS:
 	 only run when the tab/window is out of focus. The status bar only shows requests for the tab in 
 	 focus, so running only when out of focus helps keep Lupin stealthy
 
-    -n --nibble     runs for a very short burst as soon as the page gets loaded (and is in focus)
+    -n --nibble
 
 	 When websites first load, they make a bunch of subsequent requests for stylesheets, scripts, 
 	 media etc...It is normal for the refresh animations to persist for up to several seconds 
@@ -82,7 +83,7 @@ OPTIONS:
 	 conditions, this would mean Lupin will never run. If this flag is set, the top 25 targets 
 	 in the list will get checked no matter.
 
-    --bold         sets 'sleep=0', and 'runWhileInFocus' flags.
+    --bold
 
 	Bold mode will dramatically increases the speed in which the attack runs, and the number of 
 	target websites checked this speed increase comes at the cost of stealth. See above explanations 
