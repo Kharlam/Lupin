@@ -1,10 +1,6 @@
 ABOUT:
 
-Lupin is a network MITM tool that automatically steals passwords from Chrome & Firefox password managers. Lupin is essentially a malicious proxy that injects hidden iframes onto client HTTP requests; each of the hidden iframes points to a vulnerable target website, the browser makes a network request and Lupin forges a response. The forged response contains a login form and some script. By predetermining the actual POST addresses for each of the target websites real logins, we can forge a login form that passes the browsers' security checks. If the user happens to have a password stored in her password manager for the iframe requested, Chrome and Firefox will automatically fill in the login form with the stored credentials. A script checks for the autofilled credentials and sends them back to the attacker; once a target website has been checked, the iframe reloads, now pointing to different target site. Lupin can iterate through well over a thousand of target sites in less than a minute and essentially bruteforce any vulnerable passwords stored in the password manager.
-
-Only websites that expose login forms over HTTP are vulnerable, for example Facebook. That does not mean that all Facebook passwords are vulnerable. If a user saved her Facebook credentials from an HTTPS Facebook page, the password manager will not autofill them on an HTTP Facebook page; only passwords stored from an HTTP page are vulnerable.
-	
-Lupin only runs on Chrome/Firefox clients because these are the only two major browsers that automatically fill in login forms inside iframes without any user interaction.
+Lupin is a network MITM tool that automatically steals passwords from Chrome & Firefox password managers.
 	
 INSTALL:
 	*** Requires Python 2.5 or newer, along with the 'twisted' python module.
