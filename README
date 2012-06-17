@@ -38,7 +38,7 @@ OPTIONS:
 
     -f, --focus 
 
-    Everytime the browser makes a request the status bar shows the request being made. Since the status bar is relatively small and located at the bottom of the browser, and since the request only shows up for a few microseconds, it is highly unlikely a client will notice any single Lupin request as it flies by. However if hundreds or thousands of requests are being made in succesion, the status bar becomes a legitimate threat to Lupin's stealth. To mitigate this, Lupin will only run when the tab/window is out of focus. The status bar only shows requests for the tab in focus, so running only when out of focus helps keep Lupin stealthy
+    Everytime the browser makes a request the status bar shows the request being made. Since the status bar is relatively small and located at the bottom of the browser, and since the request only shows up for a few microseconds, it is highly unlikely a client will notice any single Lupin request as it flies by. However if hundreds or thousands of requests are being made in succesion, the status bar becomes a legitimate threat to Lupin's stealth. To mitigate this, Lupin will only run when the tab/window is out of focus. The status bar only shows requests for the tab in focus, so running only when out of focus helps keep Lupin stealthy. However, running only when the page is out of focus means that the attack may not run, if the page never loses focus. Setting this flag tells Lupin to run even if the page is in focus.
 
     -n --nibble
 
