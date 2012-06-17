@@ -50,4 +50,4 @@ When websites first load, they tend to make a bunch of subsequent requests for s
 
     --bold
 
-Bold mode dramatically increases the speed in which the attack runs and the number of target websites checked. This speed increase comes at the cost of stealth. See above explanations for more details. Clients of moderate savviness 	may/will know that something is wrong. Although they would have a  hard time figuring out what  exactly happened to them. If you don't care about alerting the victims and only care about getting as many credentials as possible as quickly as possible then Bold mode is for you.
+Bold mode dramatically increases the speed in which the attack runs and the number of target websites checked. This speed increase comes at the cost of stealth. See above explanations for more details. Clients of moderate savviness may/will know that something is wrong. Although they would have a  hard time figuring out what  exactly happened to them. If you don't care about alerting the victims and only care about getting as many credentials as possible as quickly as possible then Bold mode is for you.
