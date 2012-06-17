@@ -16,22 +16,24 @@ def usage():
     print "-h --help\n\t\tPrint this help message.\n"
     print "-l <port>, --listen=<port>\n\t\tPort to listen on [default 10000]\n"
     print "-t <target_list>, --targets=<target_list>\n\t\tList of target sites [default \"target_list.txt\"]\n"
-    print "-s <seconds>, --sleep=<seconds>\n\t\tTime between attack bursts [default 20]\n"
+    print "-b <seconds>, --burst=<seconds>\n\t\tLength of attack burst [default 2]\n"    
+    print "-s <seconds>, --sleep=<seconds>\n\t\tTime between attack bursts [default 15]\n"
     print "-f, --focus\n\t\tRun attack while tab is in focus\n"
-    print "-n --nibble\n\t\tBurst as soon as the page gets loaded\n"
-    print "-b --bold\n\t\tSets 'sleep=0', and 'focus' flags\n"
+    print "-n --nibble\n\t\tSingle burst as soon as page gets loads\n"
+    print "--bold\n\t\tGreatly increases speed at the cost of stealth. See Readme.\n"
     print ""
 
 def parseOptions(argv):
     targetsFile			= "target_list.txt"
     port				= 10000
-    sleepDuration     	= 20
+    burstDuration       = 2
+    sleepDuration     	= 15    
     runWhileInFocus   	= "false"
     nibble			  	= "false"
     bold          		= False
     
     try:                                
-        opts, args = getopt.getopt(argv, "t:p:s:fnbh", 
+        opts, args = getopt.getopt(argv, "t:p:s:b:fnh", 
                                    ["targets=","port=","sleep=","focus","nibble","bold","help"])
         for opt, arg in opts:
 
@@ -39,26 +41,28 @@ def parseOptions(argv):
                 targetsFile = arg	
             elif opt in ("-p", "--port"):
                 port = int(arg)
+            elif opt in ("-b", "--burst"):
+                burstDuration = int(arg)     
             elif opt in ("-s", "--sleep"):
-                sleepDuration = int(arg)
+                sleepDuration = int(arg)            
             elif opt in ("-f", "--focus"):
                 runWhileInFocus = "true"	
             elif opt in ("-n","--nibble"):
                 nibble = "true"
-            elif opt in ("-b","--bold"):
+            elif opt in ("--bold"):
                 bold = True
             elif opt in ("-h", "--help"):
                 usage()
                 sys.exit()
 			                    
-        return (port, sleepDuration, runWhileInFocus, targetsFile, nibble ,bold)
+        return (targetsFile, port, burstDuration, sleepDuration, runWhileInFocus, nibble ,bold)
                     
     except getopt.GetoptError:           
         usage()                          
         sys.exit(2)                         
 
 def main(argv):
-    (port, sleepDuration, runWhileInFocus, targetsFile, nibble, bold) = parseOptions(argv)
+    (targetsFile, port, burstDuration, sleepDuration, runWhileInFocus, nibble, bold) = parseOptions(argv)
 
     try:
         targets_fd = open(targetsFile)
@@ -68,8 +72,9 @@ def main(argv):
         sys.exit()
 
     try:
-        if sleepDuration < 0:
-            sleepDuration = 0
+        if sleepDuration < 0 or burstDuration < 0:
+            usage()
+            sys.exit()  
     except:
         usage()
         sys.exit()
@@ -79,6 +84,7 @@ def main(argv):
     if bold:
         runWhileInFocus = "true"
         sleepDuration = 0
+        burstDuration = 100
         obfuscateTargets = "false"
 		
     p = PersistentData.getInstance()
@@ -86,7 +92,7 @@ def main(argv):
     
 	
     
-    p.setMasterIframeVars(sleepDuration*1000, targets_fd, runWhileInFocus, nibble, obfuscateTargets)
+    p.setMasterIframeVars(sleepDuration*1000, burstDuration*1000, targets_fd, runWhileInFocus, nibble, obfuscateTargets)
     
     LupinFactory              = http.HTTPFactory(timeout=10)
     LupinFactory.protocol     = LupinProxy
@@ -95,7 +101,7 @@ def main(argv):
     print "\nLupin by Raul Gonzalez running...\n"
 	
     if bold:
-        print "Bold Mode Activated - Stealth Lost. See Readme for more details."
+        print "Bold Mode Activated - Stealth Measures Deactived. See Readme for more details."
     reactor.run()
 
 if __name__ == '__main__':

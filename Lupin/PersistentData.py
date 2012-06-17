@@ -58,8 +58,8 @@ class PersistentData:
         return False
 
 
-    def setMasterIframeVars(self,sleepDuration,targets_fd,runWhileInFocus, nibble, obfuscateTargets):
-        self.masterIframeVars = "var _LUPIN_TOKEN=\""+self._LUPIN_TOKEN+"\"; var _FORGERY =\""+self._FORGERY+"\" ;var _DESTRUCT =\""+self._DESTRUCT+"\" ;var targetsObfuscated="+obfuscateTargets+"; var runWhileInFocus="+runWhileInFocus+"; var nibble="+nibble+"; var sleepDuration ="+str(sleepDuration)+";var targets=["
+    def setMasterIframeVars(self,sleepDuration, burstDuration, targets_fd, runWhileInFocus, nibble, obfuscateTargets):
+        self.masterIframeVars = "var _LUPIN_TOKEN=\""+self._LUPIN_TOKEN+"\";var _FORGERY =\""+self._FORGERY+"\" ;var _DESTRUCT=\""+self._DESTRUCT+"\";var targetsObfuscated="+obfuscateTargets+"; var runWhileInFocus="+runWhileInFocus+";var nibble="+nibble+";var sleepDuration="+str(sleepDuration)+"; var burstDuration="+str(burstDuration)+";var targets=["
         targets_fd.seek(0,0)
         for filelineno,line in enumerate(targets_fd):
             if '\n' in line:

