@@ -8,7 +8,6 @@ Lupin only runs on Chrome/Firefox clients because these are the only two major b
 	
 INSTALL:
 	*** Requires Python 2.5 or newer, along with the 'twisted' python module.
-	* Unpack: tar zxvf Lupin-0.1.tar.gz
 	* Install twisted:  sudo apt-get install python-twisted-web
 
 RUN:
