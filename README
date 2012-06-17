@@ -1,5 +1,5 @@
 ABOUT:
-	Lupin is a network MITM tool that automatically steals passwords from Chrome & Firefox password managers. Lupin is essentially a malicious proxy that injects hidden iframes onto client HTTP requests; each of the hidden iframes points to a vulnerable target website, the browser makes a network request and Lupin forges a response. The forged response contains a login form and some script. By predetermining the actual POST addresses for each of the target websites real logins, we can forge a login form that passes the browsers' security checks. If the user happens to have a password stored in her password manager for the iframe requested, Chrome and Firefox will automatically fill in the login form with the stored credentials. A scriptchecks for the autofilled credentials and sends them back to the attacker; once a target website has been checked, the iframe reloads, now pointing to different target site. Lupin can iterate through well over a thousand of target sites in less than a minute and essentially bruteforce any vulnerable passwords stored in the password manager.
+	Lupin is a network MITM tool that automatically steals passwords from Chrome & Firefox password managers. Lupin is essentially a malicious proxy that injects hidden iframes onto client HTTP requests; each of the hidden iframes points to a vulnerable target website, the browser makes a network request and Lupin forges a response. The forged response contains a login form and some script. By predetermining the actual POST addresses for each of the target websites real logins, we can forge a login form that passes the browsers' security checks. If the user happens to have a password stored in her password manager for the iframe requested, Chrome and Firefox will automatically fill in the login form with the stored credentials. A script checks for the autofilled credentials and sends them back to the attacker; once a target website has been checked, the iframe reloads, now pointing to different target site. Lupin can iterate through well over a thousand of target sites in less than a minute and essentially bruteforce any vulnerable passwords stored in the password manager.
 
 	Only websites that expose login forms over HTTP are vulnerable, for example Facebook. That does not mean that all Facebook passwords are vulnerable. If a user saved her Facebook credentials from an HTTPS Facebook page, the password manager will not autofill them on an HTTP Facebook page; only passwords stored from an HTTP page are vulnerable.
 	
@@ -13,15 +13,15 @@ INSTALL:
 RUN:
 
 	1) allow machine to forward: 
-	   echo "1" > /proc/sys/net/ipv4/ip_forward
+	echo "1" > /proc/sys/net/ipv4/ip_forward
 
 	2) Setup iptables:
-	   iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port <LupinPort>
+	iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port <LupinPort>
 	
 	3) Run Lupin with optional arguments (See Below).
 		
 	4) Redirect traffic to your machine:
-	   arpspoof -i <networkDevice> -t <targetAddress> <DefaultGatewayAddress>
+	arpspoof -i <networkDevice> -t <targetAddress> <DefaultGatewayAddress>
 
 OPTIONS:
 	Run 'python Lupin.py -h' to get the command-line options.
