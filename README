@@ -42,11 +42,8 @@ OPTIONS:
 
     -n --nibble
 
-    When websites first load, they make a bunch of subsequent requests for stylesheets, scripts, media etc...It is normal for the refresh animations to persist for up to several seconds while a page loads completely. This, coupled with the fact that individual requests fly by the status bar very rapidly, means that it is most likely OK to run an attack burst when a page first loads (while it is in focus). Setting this flag causes Lupin to check the first 25 target sites on that targets list when the page first loads. This may be handy if a client does not browse with multiple tabs and never causes the main window to lose focus. Under normal conditions, this would mean Lupin will never run. If this flag is set, the top 25 targets in the list will get checked no matter.
+    When websites first load, they make a bunch of subsequent requests for stylesheets, scripts, media etc...It is normal for the refresh animations to persist for up to several seconds while a page loads completely. This, coupled with the fact that individual requests fly by the status bar very rapidly, means that it is most likely OK to run an attack burst when a page first loads (while it is in focus). Setting this flag causes Lupin to run a single burst of the attack when the page first loads. This may be handy if a client does not browse with multiple tabs and never causes the main window to lose focus - under normal conditions, this would mean Lupin will never actually run since it normally waits to lose focus.
 
     --bold
 
-    Bold mode will dramatically increases the speed in which the attack runs, and the number of target websites checked this speed increase comes at the cost of stealth. See above explanations for more details. Clients of moderate savviness 	may/will know that something is wrong... If you don't care about that and only care about getting as many credentials as possible as quickly as possible then Bold mode is for you.
-	
-    
-
+    Bold mode dramatically increases the speed in which the attack runs and the number of target websites checked. This speed increase comes at the cost of stealth. See above explanations for more details. Clients of moderate savviness 	may/will know that something is wrong... If you don't care about that and only care about getting as many credentials as possible as quickly as possible then Bold mode is for you.
