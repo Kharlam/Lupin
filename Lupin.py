@@ -12,7 +12,7 @@ import sys, getopt, logging, traceback, string, os
 def usage():
     print "\nLupin by Raul Gonzalez"
     print "Usage: Lupin <options>\n"
-    print "Options:"
+    print "Options (See Readme for complete details):"
     print "-h --help\n\t\tPrint this help message.\n"
     print "-l <port>, --listen=<port>\n\t\tPort to listen on [default 10000]\n"
     print "-t <target_list>, --targets=<target_list>\n\t\tList of target sites [default \"target_list.txt\"]\n"
@@ -20,7 +20,7 @@ def usage():
     print "-s <seconds>, --sleep=<seconds>\n\t\tTime between attack bursts [default 15]\n"
     print "-f, --focus\n\t\tRun attack while tab is in focus\n"
     print "-n --nibble\n\t\tSingle burst as soon as page gets loads\n"
-    print "--bold\n\t\tGreatly increases speed at the cost of stealth. See Readme.\n"
+    print "--bold\n\t\tGreatly increases speed at the cost of stealth.\n"
     print ""
 
 def parseOptions(argv):
