@@ -42,7 +42,7 @@ OPTIONS:
 
     -n --nibble
 
-    When websites first load, they make a bunch of subsequent requests for stylesheets, scripts, media etc...It is normal for the refresh animations to persist for up to several seconds while a page loads completely. This, coupled with the fact that individual requests fly by the status bar very rapidly, means that it is most likely OK to run an attack burst when a page first loads (while it is in focus). Setting this flag causes Lupin to run a single burst of the attack when the page first loads. This may be handy if a client does not browse with multiple tabs and never causes the main window to lose focus - under normal conditions, this would mean Lupin will never actually run since it normally waits to lose focus.
+    When websites first load, they make a bunch of subsequent requests for stylesheets, scripts, media etc...It is normal for the refresh animations to persist for up to several seconds while a page loads completely. This, coupled with the fact that individual requests fly by the status bar very rapidly, means that it is most likely OK to run an attack burst when a page first loads (while it is in focus). Setting this flag causes Lupin to run a single burst of the attack when the page first loads and then sleeps until the page to lose focus. This may be handy if a client does not browse with multiple tabs and never causes the main window to lose focus - under normal conditions, this would mean Lupin will never actually run since it normally waits to lose focus.
 
     --bold
 
