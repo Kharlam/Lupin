@@ -13,15 +13,15 @@ INSTALL:
 RUN:
 
 	1) allow machine to forward: 
-	echo "1" > /proc/sys/net/ipv4/ip_forward
+	   echo "1" > /proc/sys/net/ipv4/ip_forward
 
 	2) Setup iptables:
-	iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port <LupinPort>
+	   iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port <LupinPort>
 	
 	3) Run Lupin with optional arguments (See Below).
 		
 	4) Redirect traffic to your machine:
-	arpspoof -i <networkDevice> -t <targetAddress> <DefaultGatewayAddress>
+	   arpspoof -i <networkDevice> -t <targetAddress> <DefaultGatewayAddress>
 
 OPTIONS:
 	Run 'python Lupin.py -h' to get the command-line options.
@@ -30,7 +30,7 @@ OPTIONS:
     
     -t <targets_file>, --targets=<targets_file>  
       
-    This is the list of target websites to check against. Each line in this file consists of the domain of the target and that domain's login form POST address as found on the actual domain. both addresses should be seperated by a "|" and only one target is allowed per line.
+    This is the list of target websites to check against. Each line in this file consists of the domain of the target and that domain's login form POST address as found on the real websites login form. Both addresses should be seperated by a "|" and only one target is allowed per line.
     
      -s <seconds>, --sleep=<seconds>
 
