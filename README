@@ -13,9 +13,11 @@ RUN:
 	   iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port <LupinPort>
 	
 	3) Run Lupin with optional arguments (See Below).
-		
+	
 	4) Redirect traffic to your machine:
 	   arpspoof -i <networkDevice> -t <targetAddress> <DefaultGatewayAddress>
+	   
+	   [Setting Lupin as the HTTP proxy on Chrome/Firefox works also... This may be preferable if you are simply testing on your own self and rather not mess with Arp tables]
 
 OPTIONS:
 	Run 'python Lupin.py -h' to get the command-line options.
